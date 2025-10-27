@@ -16,6 +16,11 @@ var tile_texture = preload("res://tile.png")
 var block_scale := 0.6
 
 func _ready():
+	randomize()
+	var card_data = generate_random_card()
+	blocks = card_data.blocks
+	block_types = card_data.block_types
+	
 	draw_blocks()
 	scale = Vector2(0.5, 0.5)
 	position += Vector2(80, 80)
@@ -25,6 +30,61 @@ func iso_to_screen(v: Vector2) -> Vector2:
 	var tile_w = 128 * block_scale
 	var tile_h = 96 * block_scale
 	return Vector2((v.x - v.y) * tile_w / 2, (v.x + v.y) * tile_h / 2)
+	
+# --- Данные форм карт и их веса ---
+var card_shapes = [
+	# --- несимметричные формы + их зеркала ---
+	[Vector2(0,0), Vector2(1,0), Vector2(1,1), Vector2(2,1)],       # XX\n  XX
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(2,1)],       # XXX\n  X
+	[Vector2(0,0), Vector2(1,0), Vector2(1,1)],                     # XX\n  X
+
+	# зеркальные варианты
+	[Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(-1,1)],      # зеркальная XX\nXX
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(0,1)],       # зеркальная XXX\nX
+
+	# --- симметричные формы ---
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0)],                     # XXX
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(3,0)],       # XXXX
+	[Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1)]        # XX\nXX
+]
+
+var card_weights = [
+	0.5,  # XX\n  XX
+	0.5,  # XXX\n  X
+	1.0,  # XX\n  X (симметричная)
+	0.5,  # зеркальная XX\nXX
+	0.5,  # зеркальная XXX\nX
+	1.0,  # XXX
+	1.0,  # XXXX
+	1.0   # квадрат
+]
+
+static func generate_data(shape_type: String = "random") -> Dictionary:
+	var c = Card.new()
+	var card_data = c.generate_random_card()  # вместо c.generate()
+	return {"blocks": card_data.blocks, "block_types": card_data.block_types}
+
+	
+# --- Функции выбора и генерации карт ---
+func choose_weighted_shape():
+	var total_weight = 0.0
+	for w in card_weights:
+		total_weight += w
+	var r = randf() * total_weight
+	var accum = 0.0
+	for i in range(card_shapes.size()):
+		accum += card_weights[i]
+		if r <= accum:
+			return card_shapes[i]
+	return card_shapes[-1]
+
+func generate_random_card():
+	var shape = choose_weighted_shape()
+	var types = ["residential", "industrial", "nature", "culture"]
+	var block_types = []
+	for i in range(shape.size()):
+		block_types.append(types[randi() % types.size()])
+	return {"blocks": shape, "block_types": block_types}
 
 func draw_blocks():
 	# Удаляем старые блоки, кроме фона и Area2D

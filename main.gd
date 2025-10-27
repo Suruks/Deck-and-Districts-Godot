@@ -1,8 +1,8 @@
 extends Node2D
 
-@onready var hand_script: Hand = null
+@onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 
-# --- Сетка ---
+# --- Параметры сетки ---
 var grid_size = 10
 var tile_width = 128
 var tile_height = 96
@@ -10,9 +10,10 @@ var tile_texture = preload("res://tile.png")
 var grid_nodes = []
 var grid = []
 
-# --- Рука ---
+# --- Состояние ---
 var selected_card = null
 var selected_card_index = -1
+var ghost_tiles = []
 
 # --- Цвета кварталов ---
 var block_colors = {
@@ -22,42 +23,11 @@ var block_colors = {
 	"culture": Color(1.0, 0.813, 0.3)
 }
 
-# --- Предпросмотр ---
-var preview_blocks: Array = []
-var preview_opacity := 1
-
-var card_shapes = [
-	# XXX
-	[Vector2(0,0), Vector2(1,0), Vector2(2,0)],
-
-	# XXXX
-	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(3,0)],
-
-	# XX
-	# XX
-	[Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1)],
-
-	# XX
-	#  XX
-	[Vector2(0,0), Vector2(1,0), Vector2(1,1), Vector2(2,1)],
-
-	# XXX
-	#   X
-	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(2,1)],
-
-	# XX
-	#  X
-	[Vector2(0,0), Vector2(1,0), Vector2(1,1)]
-]
-
-
+# --- READY ---
 func _ready():
 	randomize()
-	setup_grid()
-	setup_camera()
-	setup_hand()
-
-func setup_grid():
+	
+	# --- Сетка ---
 	grid_nodes.clear()
 	grid.clear()
 	for y in range(grid_size):
@@ -72,21 +42,18 @@ func setup_grid():
 			grid_nodes[y].append(tile)
 			grid[y].append(null)
 
-func setup_camera():
+	# --- Камера ---
 	var cam = Camera2D.new()
 	cam.zoom = Vector2(0.66, 0.66)
 	add_child(cam)
 	cam.make_current()
-	cam.position = grid_to_screen(grid_size / 2 - 0.5, grid_size / 2 - 0.5)
+	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5)
 
-func generate_random_card() -> Dictionary:
-	var shape = card_shapes[randi() % card_shapes.size()]
-	var block_types = []
-	var types = ["residential", "industrial", "nature", "culture"]
-	for i in range(shape.size()):
-		block_types.append(types[randi() % types.size()])
-	return {"blocks": shape, "block_types": block_types}
+	# --- Генерация руки ---
+	setup_hand()
 
+
+# --- Генерация руки ---
 func setup_hand():
 	var old_hand = $CanvasLayer.get_node_or_null("HandContainer")
 	if old_hand:
@@ -95,86 +62,60 @@ func setup_hand():
 	var hand = Hand.new()
 	hand.name = "HandContainer"
 	$CanvasLayer.add_child(hand)
-
-	# Позиция и масштаб руки
-	hand.position = Vector2(0, 490)
-	hand.scale = Vector2(1, 1)
-
 	hand.card_scene = preload("res://card.tscn")
+
 	hand.hand_data = [
-		generate_random_card(),
-		generate_random_card(),
-		generate_random_card()
+		Card.generate_data("random"),
+		Card.generate_data("random"),
+		Card.generate_data("random")
 	]
+
 	hand.draw_hand()
 	hand.connect("card_selected", Callable(self, "_on_card_selected"))
 	hand_script = hand
-	print("Карты в руке:", hand.get_children())
 
+
+# --- Выбор карты ---
 func _on_card_selected(card_index):
 	selected_card = hand_script.selected_card
 	selected_card_index = hand_script.selected_card_index
-	print("Выбрана карта с формой: ", selected_card.blocks)
+	print("Выбрана карта с формой:", selected_card.blocks)
 
+
+# --- Преобразование координат ---
 func grid_to_screen(x, y):
 	return Vector2((x - y) * tile_width / 2, (x + y) * tile_height / 2)
 
+
+# --- Обновление тайла ---
 func update_tile_visual(x, y):
 	var cell = grid_nodes[y][x]
-	if cell == null:
-		return
-	cell.modulate = block_colors.get(grid[y][x], Color(1,1,1))
+	cell.modulate = Color(1,1,1)
+	if grid[y][x] != null:
+		cell.modulate = block_colors.get(grid[y][x], Color.WHITE)
 
+
+# --- Размещение карты ---
 func place_card_on_grid(cell_coords: Vector2):
 	if selected_card == null:
 		return
 
-	# Проверка выхода за границы
 	for i in range(selected_card.blocks.size()):
 		var bpos = selected_card.blocks[i] + cell_coords
 		if bpos.x < 0 or bpos.y < 0 or bpos.x >= grid_size or bpos.y >= grid_size:
 			print("Не хватает места")
 			return
 
-	# Размещение блоков
 	for i in range(selected_card.blocks.size()):
 		var bpos = selected_card.blocks[i] + cell_coords
 		grid[bpos.y][bpos.x] = selected_card.block_types[i]
 		update_tile_visual(bpos.x, bpos.y)
 
-	# Убираем карту из руки
 	hand_script.remove_selected_card()
 	selected_card = null
 	selected_card_index = -1
 	clear_preview()
 
-func _input(event):
-	# Движение мыши
-	if event is InputEventMouseMotion and selected_card:
-		update_preview()
-
-	# Клик мыши для установки карты
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MouseButton.MOUSE_BUTTON_LEFT and selected_card:
-			var mouse_pos = get_global_mouse_position()
-			for y in range(grid_size):
-				for x in range(grid_size):
-					if point_in_rhomb(mouse_pos, grid_nodes[y][x].position):
-						place_card_on_grid(Vector2(x, y))
-						break
-
-	# Вращение карты
-	if event is InputEventKey and event.pressed:
-		if event.keycode == Key.KEY_R and selected_card:
-			selected_card.rotate_90()
-			update_preview()  # <-- обновляем ghost после вращения
-
-
-func point_in_rhomb(point: Vector2, center: Vector2) -> bool:
-	var local = point - center
-	var dx = abs(local.x) / (tile_width / 2)
-	var dy = abs(local.y) / (tile_height / 2)
-	return dx + dy <= 1
 
 # --- Предпросмотр ---
 func show_preview(cell_coords: Vector2):
@@ -183,43 +124,59 @@ func show_preview(cell_coords: Vector2):
 		return
 
 	for i in range(selected_card.blocks.size()):
-		var block_pos = selected_card.blocks[i] + cell_coords
-		if block_pos.x < 0 or block_pos.y < 0 or block_pos.x >= grid_size or block_pos.y >= grid_size:
+		var bpos = selected_card.blocks[i] + cell_coords
+		if bpos.x < 0 or bpos.y < 0 or bpos.x >= grid_size or bpos.y >= grid_size:
 			continue
+		var ghost = Sprite2D.new()
+		ghost.texture = tile_texture
+		ghost.centered = true
+		ghost.position = grid_to_screen(bpos.x, bpos.y)
+		ghost.modulate = block_colors.get(selected_card.block_types[i], Color.WHITE)
+		ghost.modulate.a = 1.0
+		add_child(ghost)
+		ghost_tiles.append(ghost)
 
-		var block_type = selected_card.block_types[i]
-		var color = block_colors.get(block_type, Color(1,1,1))
-		var preview_tile = Sprite2D.new()
-		preview_tile.texture = tile_texture
-		preview_tile.centered = true
-		preview_tile.position = grid_to_screen(block_pos.x, block_pos.y)
-		preview_tile.modulate = Color(color.r, color.g, color.b, preview_opacity)
-		add_child(preview_tile)
-		preview_blocks.append(preview_tile)
-		
-		
-func update_preview():
-	if selected_card == null:
-		clear_preview()
-		return
+func clear_preview():
+	for g in ghost_tiles:
+		g.queue_free()
+	ghost_tiles.clear()
 
+
+# --- Ввод ---
+func _input(event):
+	if event is InputEventKey and event.pressed:
+		if event.keycode == Key.KEY_R and selected_card:
+			selected_card.rotate_90()
+			update_preview()
+
+	if event is InputEventMouseMotion and selected_card:
+		update_preview()
+
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MouseButton.MOUSE_BUTTON_LEFT and selected_card:
+			var cell = get_hovered_cell()
+			if cell != null:
+				place_card_on_grid(cell)
+
+
+# --- Подсобные ---
+func get_hovered_cell():
 	var mouse_pos = get_global_mouse_position()
-	var found = false
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if point_in_rhomb(mouse_pos, grid_nodes[y][x].position):
-				show_preview(Vector2(x, y))
-				found = true
-				break
-		if found:
-			break
+				return Vector2(x, y)
+	return null
 
-	if not found:
+func update_preview():
+	var cell = get_hovered_cell()
+	if cell != null:
+		show_preview(cell)
+	else:
 		clear_preview()
 
-
-func clear_preview():
-	for p in preview_blocks:
-		if is_instance_valid(p):
-			p.queue_free()
-	preview_blocks.clear()
+func point_in_rhomb(point: Vector2, center: Vector2) -> bool:
+	var local = point - center
+	var dx = abs(local.x) / (tile_width / 2)
+	var dy = abs(local.y) / (tile_height / 2)
+	return dx + dy <= 1

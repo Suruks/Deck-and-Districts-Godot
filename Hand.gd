@@ -21,7 +21,7 @@ func draw_hand():
 		var card_instance = card_scene.instantiate()
 		card_instance.blocks = card_data.blocks.duplicate()
 		card_instance.block_types = card_data.block_types.duplicate()
-		card_instance.position = Vector2(i * 120, 0)
+		card_instance.position = Vector2(i * 120, get_viewport_rect().size.y - 150)
 		add_child(card_instance)
 		hand_nodes.append(card_instance)
 		# соединяем сигнал с индексом через bind
