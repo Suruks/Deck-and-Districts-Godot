@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://cx3ayalb7wonr"]
+
+[ext_resource type="Script" uid="uid://cmeii2u0sgk25" path="res://card.gd" id="1_kikvd"]
+[ext_resource type="Texture2D" uid="uid://c6lnhsy81bu10" path="res://card.png" id="2_rjlel"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_kikvd")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Area2D"]
+polygon = PackedVector2Array(-100, -96, -97, -100, 97, -100, 100, -97, 100, 97, 97, 100, -97, 100, -100, 98)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_rjlel")

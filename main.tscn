@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7nrldhhp1yy2"]
+
+[ext_resource type="Script" uid="uid://drnut3xcv78g4" path="res://main.gd" id="1_ig7tw"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_ig7tw")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HandContainer" type="Node2D" parent="CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 40.0
