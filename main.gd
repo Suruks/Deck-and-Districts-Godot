@@ -52,7 +52,7 @@ func _ready():
 	cam.zoom = Vector2(0.66, 0.66)
 	add_child(cam)
 	cam.make_current()
-	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5)
+	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5) + Vector2(-200, 0)
 
 	# --- Генерация руки ---
 	setup_hand()
