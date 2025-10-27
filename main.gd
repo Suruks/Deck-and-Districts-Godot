@@ -26,7 +26,33 @@ var block_colors = {
 var preview_blocks: Array = []
 var preview_opacity := 1
 
+var card_shapes = [
+	# XXX
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0)],
+
+	# XXXX
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(3,0)],
+
+	# XX
+	# XX
+	[Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1)],
+
+	# XX
+	#  XX
+	[Vector2(0,0), Vector2(1,0), Vector2(1,1), Vector2(2,1)],
+
+	# XXX
+	#   X
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(2,1)],
+
+	# XX
+	#  X
+	[Vector2(0,0), Vector2(1,0), Vector2(1,1)]
+]
+
+
 func _ready():
+	randomize()
 	setup_grid()
 	setup_camera()
 	setup_hand()
@@ -53,6 +79,14 @@ func setup_camera():
 	cam.make_current()
 	cam.position = grid_to_screen(grid_size / 2 - 0.5, grid_size / 2 - 0.5)
 
+func generate_random_card() -> Dictionary:
+	var shape = card_shapes[randi() % card_shapes.size()]
+	var block_types = []
+	var types = ["residential", "industrial", "nature", "culture"]
+	for i in range(shape.size()):
+		block_types.append(types[randi() % types.size()])
+	return {"blocks": shape, "block_types": block_types}
+
 func setup_hand():
 	var old_hand = $CanvasLayer.get_node_or_null("HandContainer")
 	if old_hand:
@@ -68,9 +102,9 @@ func setup_hand():
 
 	hand.card_scene = preload("res://card.tscn")
 	hand.hand_data = [
-		{"blocks":[Vector2(0,0), Vector2(1,0), Vector2(0,1)], "block_types":["residential","industrial","nature"]},
-		{"blocks":[Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1)], "block_types":["residential","industrial","nature","culture"]},
-		{"blocks":[Vector2(0,0), Vector2(0,1), Vector2(0,2)], "block_types":["industrial","industrial","residential"]}
+		generate_random_card(),
+		generate_random_card(),
+		generate_random_card()
 	]
 	hand.draw_hand()
 	hand.connect("card_selected", Callable(self, "_on_card_selected"))
@@ -115,22 +149,11 @@ func place_card_on_grid(cell_coords: Vector2):
 	clear_preview()
 
 func _input(event):
-	# Движение мыши для предпросмотра
+	# Движение мыши
 	if event is InputEventMouseMotion and selected_card:
-		var mouse_pos = get_global_mouse_position()
-		var found = false
-		for y in range(grid_size):
-			for x in range(grid_size):
-				if point_in_rhomb(mouse_pos, grid_nodes[y][x].position):
-					show_preview(Vector2(x, y))
-					found = true
-					break
-			if found:
-				break
-		if not found:
-			clear_preview()
+		update_preview()
 
-	# Клик для размещения
+	# Клик мыши для установки карты
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MouseButton.MOUSE_BUTTON_LEFT and selected_card:
 			var mouse_pos = get_global_mouse_position()
@@ -144,20 +167,8 @@ func _input(event):
 	if event is InputEventKey and event.pressed:
 		if event.keycode == Key.KEY_R and selected_card:
 			selected_card.rotate_90()
-			
-			# Обновляем предпросмотр на текущей позиции мыши
-			var mouse_pos = get_global_mouse_position()
-			var found = false
-			for y in range(grid_size):
-				for x in range(grid_size):
-					if point_in_rhomb(mouse_pos, grid_nodes[y][x].position):
-						show_preview(Vector2(x, y))
-						found = true
-						break
-				if found:
-					break
-			if not found:
-				clear_preview()
+			update_preview()  # <-- обновляем ghost после вращения
+
 
 func point_in_rhomb(point: Vector2, center: Vector2) -> bool:
 	var local = point - center
@@ -185,6 +196,27 @@ func show_preview(cell_coords: Vector2):
 		preview_tile.modulate = Color(color.r, color.g, color.b, preview_opacity)
 		add_child(preview_tile)
 		preview_blocks.append(preview_tile)
+		
+		
+func update_preview():
+	if selected_card == null:
+		clear_preview()
+		return
+
+	var mouse_pos = get_global_mouse_position()
+	var found = false
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if point_in_rhomb(mouse_pos, grid_nodes[y][x].position):
+				show_preview(Vector2(x, y))
+				found = true
+				break
+		if found:
+			break
+
+	if not found:
+		clear_preview()
+
 
 func clear_preview():
 	for p in preview_blocks:
