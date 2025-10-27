@@ -16,15 +16,12 @@ var tile_texture = preload("res://tile.png")
 var block_scale := 0.6
 
 func _ready():
-	randomize()
-	var card_data = generate_random_card()
-	blocks = card_data.blocks
-	block_types = card_data.block_types
-	
 	draw_blocks()
+	
 	scale = Vector2(0.5, 0.5)
 	position += Vector2(80, 80)
 	area.connect("input_event", Callable(self, "_on_input_event"))
+
 
 func iso_to_screen(v: Vector2) -> Vector2:
 	var tile_w = 128 * block_scale

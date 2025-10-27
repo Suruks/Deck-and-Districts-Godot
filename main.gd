@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
+@onready var deck: Deck = Deck.new()
 
 # --- Параметры сетки ---
 var grid_size = 10
@@ -15,6 +16,9 @@ var selected_card = null
 var selected_card_index = -1
 var ghost_tiles = []
 
+var deck_sprite: Sprite2D
+var deck_label: Label
+
 # --- Цвета кварталов ---
 var block_colors = {
 	"residential": Color(0.3, 0.837, 1.0),
@@ -26,6 +30,7 @@ var block_colors = {
 # --- READY ---
 func _ready():
 	randomize()
+	deck.init_deck(12)
 	
 	# --- Сетка ---
 	grid_nodes.clear()
@@ -51,6 +56,22 @@ func _ready():
 
 	# --- Генерация руки ---
 	setup_hand()
+	
+		# --- Спрайт колоды ---
+	deck_sprite = Sprite2D.new()
+	deck_sprite.texture = preload("res://deck.png")
+	$CanvasLayer.add_child(deck_sprite)
+	deck_sprite.position = Vector2(70, get_viewport_rect().size.y - 180) # над рукой
+	deck_sprite.scale = Vector2(0.12, 0.12)
+
+	# --- Лейбл с количеством карт ---
+	deck_label = Label.new()
+	deck_label.text = str(deck.cards.size())
+	deck_label.scale = Vector2(2.0, 2.0)
+	$CanvasLayer.add_child(deck_label)
+	deck_label.position = Vector2(65, get_viewport_rect().size.y - 200)
+	deck_label.modulate = Color(0.0, 0.145, 0.541, 1.0)
+
 
 
 # --- Генерация руки ---
@@ -65,9 +86,9 @@ func setup_hand():
 	hand.card_scene = preload("res://card.tscn")
 
 	hand.hand_data = [
-		Card.generate_data("random"),
-		Card.generate_data("random"),
-		Card.generate_data("random")
+		deck.draw_card(),
+		deck.draw_card(),
+		deck.draw_card()
 	]
 
 	hand.draw_hand()
@@ -111,7 +132,17 @@ func place_card_on_grid(cell_coords: Vector2):
 		grid[bpos.y][bpos.x] = selected_card.block_types[i]
 		update_tile_visual(bpos.x, bpos.y)
 
+		# Удаляем карту из руки
 	hand_script.remove_selected_card()
+
+	# Берём новую карту из колоды
+	var new_card = deck.draw_card()
+	if new_card != null:
+		hand_script.add_card(new_card)
+		
+	# Обновляем лейбл
+	deck_label.text = str(deck.cards.size())
+		
 	selected_card = null
 	selected_card_index = -1
 	clear_preview()

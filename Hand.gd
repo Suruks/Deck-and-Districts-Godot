@@ -10,6 +10,10 @@ var hand_nodes: Array = []
 var selected_card_index: int = -1
 var selected_card = null
 
+func add_card(card_data):
+	hand_data.append(card_data)
+	draw_hand()
+	
 func draw_hand():
 	# удаляем старые Node
 	for child in get_children():
