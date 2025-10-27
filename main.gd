@@ -67,9 +67,14 @@ func _ready():
 	# --- Лейбл с количеством карт ---
 	deck_label = Label.new()
 	deck_label.text = str(deck.cards.size())
-	deck_label.scale = Vector2(2.0, 2.0)
+	
+	var font_var = FontVariation.new()
+	font_var.base_font = load("res://your_font.ttf")
+	deck_label.add_theme_font_override("font", font_var)
+	deck_label.add_theme_font_size_override("font_size", 36)
+	
 	$CanvasLayer.add_child(deck_label)
-	deck_label.position = Vector2(65, get_viewport_rect().size.y - 200)
+	deck_label.position = Vector2(60, get_viewport_rect().size.y - 195)
 	deck_label.modulate = Color(0.0, 0.145, 0.541, 1.0)
 
 
