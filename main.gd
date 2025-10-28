@@ -3,6 +3,7 @@ extends Node2D
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 @onready var deck: Deck = Deck.new()
 @onready var quest_deck: QuestDeck = QuestDeck.new()
+@onready var quest_manager = QuestManager.new(quest_deck)
 
 # --- Параметры сетки ---
 var grid_size = 10
@@ -58,8 +59,6 @@ func _ready():
 	# --- Генерация руки ---
 	setup_hand()
 	
-	setup_quests()
-	
 	# --- Спрайт колоды ---
 	deck_sprite = Sprite2D.new()
 	deck_sprite.texture = preload("res://deck.png")
@@ -86,11 +85,27 @@ func _ready():
 	input_node.grid_size = grid_size
 	input_node.tile_width = tile_width
 	input_node.tile_height = tile_height
+	input_node.connect("card_placed", Callable(self, "update_quest_scores"))
 	
 	# Квесты
+	# Создаём менеджер квестов
 	quest_deck.init_quests()
-	setup_quests()
+	
+	quest_manager = QuestManager.new(quest_deck)
+	quest_manager.active_quests_container = active_quests_container
+	quest_manager.quest_ui_scene = quest_ui_scene
+	quest_manager.setup_quests() # теперь active_quests заполнен
+	
+	print("Количество квестов в менеджере:", quest_manager.active_quests.size())
+	for q in quest_manager.active_quests:
+		print("Квест:", q.quest_type)
 
+	# Подключаем сигнал, чтобы пересчитывать очки при установке карты
+	input_node.connect("card_placed", Callable(self, "update_quest_scores"))
+
+	quest_manager.active_quests_container = active_quests_container
+	quest_manager.quest_ui_scene = quest_ui_scene
+	
 
 @onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
 @export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
@@ -114,24 +129,12 @@ func create_quest_ui(quest: Quest) -> Control:
 	panel_instance.call_deferred("_update_size")
 	return panel_instance
 
-
-
-func setup_quests():
-	active_quests.clear()
-	for child in active_quests_container.get_children():
-		child.queue_free()
-
-	# Берём 3 квеста из колоды
-	for i in range(3):
-		var q = quest_deck.draw_quest()
-		if q == null:
-			break
-		active_quests.append(q)
-
-		var ui = quest_ui_scene.instantiate()
-		ui.quest = q
-		active_quests_container.add_child(ui)
-		ui.call_deferred("update_ui")
+func update_quest_scores():
+	if quest_manager == null:
+		return
+	var total = quest_manager.compute_all_scores(grid, grid_size)
+	#quest
+	print("Общий счёт квестов:", total)
 
 		
 # --- Генерация руки ---

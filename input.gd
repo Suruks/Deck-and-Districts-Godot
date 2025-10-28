@@ -58,7 +58,8 @@ func place_card_on_grid(cell_coords: Vector2):
 
 	# Обновляем лейбл
 	main_ref.deck_label.text = str(main_ref.deck.cards.size())
-
+	
+		
 	# Очистка состояния
 	main_ref.selected_card = null
 	main_ref.selected_card_index = -1
