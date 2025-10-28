@@ -1,6 +1,8 @@
 class_name QuestManager
 extends Node
 
+signal quest_completed(reward_count: int)
+
 @export var quest_ui_scene: PackedScene
 @export var active_quests_container: VBoxContainer
 
@@ -42,6 +44,11 @@ func complete_quest(q: Quest):
 	else:
 		# если UI-ноду не нашли, просто убираем квест из списка
 		active_quests.erase(q)
+		
+	#добавить карты в колоду
+	var reward = q.reward_cards
+	emit_signal("quest_completed", reward)
+
 
 
 

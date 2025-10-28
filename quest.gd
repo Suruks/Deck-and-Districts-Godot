@@ -88,7 +88,6 @@ func _calc_heart_of_culture(grid, grid_size):
 	return bonus
 
 
-# --- 5. Пояс жизни ---
 func _calc_life_belt(grid, grid_size):
 	var bonus := 0
 
@@ -99,22 +98,20 @@ func _calc_life_belt(grid, grid_size):
 		var has_residential := false
 		for x in range(grid_size):
 			var cell = grid[y][x]
+			
 			if cell == "nature":
 				has_nature = true
 				count += 1
 			elif cell == "residential":
 				has_residential = true
 				count += 1
-			elif cell == null:
-				# сброс линии
+			else:
 				if count >= 4 and has_nature and has_residential:
 					bonus += 4
 				count = 0
 				has_nature = false
 				has_residential = false
-			else:
-				# другой тип блока
-				count += 1
+		
 		# проверка в конце строки
 		if count >= 4 and has_nature and has_residential:
 			bonus += 4
@@ -126,20 +123,20 @@ func _calc_life_belt(grid, grid_size):
 		var has_residential := false
 		for y in range(grid_size):
 			var cell = grid[y][x]
+			
 			if cell == "nature":
 				has_nature = true
 				count += 1
 			elif cell == "residential":
 				has_residential = true
 				count += 1
-			elif cell == null:
+			else:
 				if count >= 4 and has_nature and has_residential:
 					bonus += 4
 				count = 0
 				has_nature = false
 				has_residential = false
-			else:
-				count += 1
+		
 		if count >= 4 and has_nature and has_residential:
 			bonus += 4
 

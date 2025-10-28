@@ -99,13 +99,10 @@ func _ready():
 	quest_manager.active_quests_container = active_quests_container
 	quest_manager.quest_ui_scene = quest_ui_scene
 	quest_manager.setup_quests() # теперь active_quests заполнен
-	
-	print("Количество квестов в менеджере:", quest_manager.active_quests.size())
-	for q in quest_manager.active_quests:
-		print("Квест:", q.quest_type)
-
 	quest_manager.active_quests_container = active_quests_container
 	quest_manager.quest_ui_scene = quest_ui_scene
+	
+	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))
 	
 
 @onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
@@ -137,7 +134,11 @@ func update_quest_scores():
 	#quest
 	print("Общий счёт квестов:", total)
 
-		
+func _on_quest_completed(reward_count: int):
+	print("Квест завершён! Добавляем", reward_count, "карт(ы) в колоду.")
+	deck.add_cards(reward_count)
+	deck_label.text = str(deck.cards.size())
+	
 # --- Генерация руки ---
 func setup_hand():
 	var old_hand = $CanvasLayer.get_node_or_null("HandContainer")
