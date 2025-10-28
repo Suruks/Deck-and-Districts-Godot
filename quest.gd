@@ -10,7 +10,6 @@ extends Resource
 func is_completed() -> bool:
 	return current_progress >= target_progress
 
-
 func calculate_score(grid: Array, grid_size: int) -> int:
 	var score := 0
 	match quest_type:
@@ -92,20 +91,58 @@ func _calc_heart_of_culture(grid, grid_size):
 # --- 5. Пояс жизни ---
 func _calc_life_belt(grid, grid_size):
 	var bonus := 0
+
+	# Горизонтальные линии
 	for y in range(grid_size):
+		var count := 0
+		var has_nature := false
+		var has_residential := false
 		for x in range(grid_size):
-			for dir in [[1,0],[0,1]]:
-				var seq := []
-				for k in range(4):
-					var nx = x + k * dir[0]
-					var ny = y + k * dir[1]
-					if nx >= grid_size or ny >= grid_size:
-						break
-					seq.append(grid[ny][nx])
-				if seq.size() == 4:
-					var pattern = ",".join(seq)
-					if pattern.match("^(nature,residential|residential,nature)(,nature,residential|,residential,nature){1,}$"):
-						bonus += 4
+			var cell = grid[y][x]
+			if cell == "nature":
+				has_nature = true
+				count += 1
+			elif cell == "residential":
+				has_residential = true
+				count += 1
+			elif cell == null:
+				# сброс линии
+				if count >= 4 and has_nature and has_residential:
+					bonus += 4
+				count = 0
+				has_nature = false
+				has_residential = false
+			else:
+				# другой тип блока
+				count += 1
+		# проверка в конце строки
+		if count >= 4 and has_nature and has_residential:
+			bonus += 4
+
+	# Вертикальные линии
+	for x in range(grid_size):
+		var count := 0
+		var has_nature := false
+		var has_residential := false
+		for y in range(grid_size):
+			var cell = grid[y][x]
+			if cell == "nature":
+				has_nature = true
+				count += 1
+			elif cell == "residential":
+				has_residential = true
+				count += 1
+			elif cell == null:
+				if count >= 4 and has_nature and has_residential:
+					bonus += 4
+				count = 0
+				has_nature = false
+				has_residential = false
+			else:
+				count += 1
+		if count >= 4 and has_nature and has_residential:
+			bonus += 4
+
 	return bonus
 
 
@@ -131,7 +168,7 @@ func _dfs_culture(grid, x, y, grid_size, visited: Dictionary) -> int:
 	visited[key] = true
 	var max_len := 1
 	for dir in [[0,-1],[1,0],[0,1],[-1,0]]:
-		max_len = max(max_len, 1 + _dfs_culture(grid, x + dir[0], y + dir[1], grid_size, visited.duplicate()))
+		max_len = max(max_len, 1 + _dfs_culture(grid, x + dir[0], y + dir[1], grid_size, visited))
 	return max_len
 
 

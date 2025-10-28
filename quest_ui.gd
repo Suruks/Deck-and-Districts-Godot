@@ -39,12 +39,6 @@ func _update_size():
 	# Обновляем layout
 	vbox.queue_sort()
 	panel.queue_redraw()
-	
-	print("panel size:", panel.size)
-	print("panel custom_minimum_size:", panel.custom_minimum_size)
-	print("panel minimum_size:", panel.get_minimum_size())
-	print("self custom_minimum_size:", custom_minimum_size)
-	print("vbox.get_combined_minimum_size:", vbox.get_combined_minimum_size())
 
 func update_ui():
 	if not quest:

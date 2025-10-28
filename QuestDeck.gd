@@ -12,7 +12,7 @@ var block_colors = {
 
 func init_quests():
 	quests.clear()
-
+	
 	# 1 — Город в зелени
 	var q1 = Quest.new()
 	q1.quest_type = "city_in_green"
@@ -52,7 +52,7 @@ func init_quests():
 	# 5 — Пояс жизни
 	var q5 = Quest.new()
 	q5.quest_type = "life_belt"
-	q5.description = "Получай +4 очка за каждую цепочку из 4 клеток, где чередуются [color=#4DFF4D]природные[/color] и [color=#4DD5FF]жилые[/color] блоки."
+	q5.description = "Получай +4 очка за каждую линию из 4 клеток, где сочетаются [color=#4DFF4D]природные[/color] и [color=#4DD5FF]жилые[/color] блоки."
 	q5.reward_cards = 3
 	q5.target_progress = 12
 	q5.current_progress = 0
@@ -66,7 +66,8 @@ func init_quests():
 	q6.target_progress = 8
 	q6.current_progress = 0
 	quests.append(q6)
-
+	
+	quests.shuffle()
 
 func draw_quest() -> Quest:
 	if quests.is_empty():

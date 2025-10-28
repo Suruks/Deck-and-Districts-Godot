@@ -32,7 +32,7 @@ var block_colors = {
 # --- READY ---
 func _ready():
 	randomize()
-	deck.init_deck(12)
+	deck.init_deck(16)
 	
 	# --- Сетка ---
 	grid_nodes.clear()
@@ -74,10 +74,14 @@ func _ready():
 	font_var.base_font = load("res://ARLRDBD.ttf")
 	deck_label.add_theme_font_override("font", font_var)
 	deck_label.add_theme_font_size_override("font_size", 36)
-	
+
+	deck_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
+	deck_label.vertical_alignment = VerticalAlignment.VERTICAL_ALIGNMENT_CENTER
+
 	$CanvasLayer.add_child(deck_label)
-	deck_label.position = Vector2(60, get_viewport_rect().size.y - 195)
-	deck_label.modulate = Color(0.0, 0.145, 0.541, 1.0)
+	deck_label.position = Vector2(47, get_viewport_rect().size.y - 195)
+	deck_label.modulate = Color(0, 0, 0, 1)
+
 	
 	var input_node = preload("res://input.gd").new()
 	add_child(input_node)
@@ -99,9 +103,6 @@ func _ready():
 	print("Количество квестов в менеджере:", quest_manager.active_quests.size())
 	for q in quest_manager.active_quests:
 		print("Квест:", q.quest_type)
-
-	# Подключаем сигнал, чтобы пересчитывать очки при установке карты
-	input_node.connect("card_placed", Callable(self, "update_quest_scores"))
 
 	quest_manager.active_quests_container = active_quests_container
 	quest_manager.quest_ui_scene = quest_ui_scene
