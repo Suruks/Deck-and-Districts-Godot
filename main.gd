@@ -57,6 +57,8 @@ func _ready():
 	# --- Генерация руки ---
 	setup_hand()
 	
+	setup_quests()
+	
 		# --- Спрайт колоды ---
 	deck_sprite = Sprite2D.new()
 	deck_sprite.texture = preload("res://deck.png")
@@ -69,7 +71,7 @@ func _ready():
 	deck_label.text = str(deck.cards.size())
 	
 	var font_var = FontVariation.new()
-	font_var.base_font = load("res://your_font.ttf")
+	font_var.base_font = load("res://ARLRDBD.ttf")
 	deck_label.add_theme_font_override("font", font_var)
 	deck_label.add_theme_font_size_override("font_size", 36)
 	
@@ -77,8 +79,46 @@ func _ready():
 	deck_label.position = Vector2(60, get_viewport_rect().size.y - 195)
 	deck_label.modulate = Color(0.0, 0.145, 0.541, 1.0)
 
+@onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
+@export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
+
+var active_quests: Array = []
+
+func create_quest_ui(quest: Quest) -> Control:
+	var panel_instance = quest_ui_scene.instantiate()  # QuestUI с Panel внутри
+	var label = panel_instance.get_node("Panel/VBoxContainer/LabelDescription")
+	var hbox = panel_instance.get_node("Panel/VBoxContainer/HBoxContainer")
+
+	label.text = quest.description
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	label.add_theme_font_size_override("font_size", 14)
+	
+	# Принудительно обновляем Layout, чтобы Label посчитал размер
+	panel_instance.call_deferred("_update_size")  # реализуем внутри QuestUI
+
+	return panel_instance
 
 
+func setup_quests():
+	active_quests.clear()
+	for child in active_quests_container.get_children():
+		child.queue_free()
+
+	for i in range(3):
+		var q = Quest.new()
+		q.description = "+3 очка за культурный квартал, который соседствует со всеми четырьмя типами кварталов (жилой, промышленный, природный, культурный) " + str(i + 1)
+		q.reward_cards = 1 + i
+		q.current_progress = 3
+		q.target_progress = 5 + i * 2
+		active_quests.append(q)
+
+		var ui = quest_ui_scene.instantiate()
+		ui.quest = q
+		active_quests_container.add_child(ui)
+		ui.call_deferred("update_ui")  # вместо await
+
+
+		
 # --- Генерация руки ---
 func setup_hand():
 	var old_hand = $CanvasLayer.get_node_or_null("HandContainer")
