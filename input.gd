@@ -14,20 +14,22 @@ func _input(event):
 	if main_ref == null:
 		return
 
-	if event is InputEventKey and event.pressed:
-		if event.keycode == Key.KEY_R and main_ref.selected_card:
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MouseButton.MOUSE_BUTTON_WHEEL_DOWN and main_ref.selected_card:
 			main_ref.selected_card.rotate_90()
 			update_preview()
 			card_rotated.emit()
-
-	elif event is InputEventMouseMotion and main_ref.selected_card:
-		update_preview()
-
-	elif event is InputEventMouseButton and event.pressed:
+		if event.button_index == MouseButton.MOUSE_BUTTON_WHEEL_UP and main_ref.selected_card:
+			main_ref.selected_card.rotate_270()
+			update_preview()
+			card_rotated.emit()
 		if event.button_index == MouseButton.MOUSE_BUTTON_LEFT and main_ref.selected_card:
 			var cell = get_hovered_cell()
 			if cell != null:
 				place_card_on_grid(cell)
+
+	elif event is InputEventMouseMotion and main_ref.selected_card:
+		update_preview()
 
 # --- Размещение карты ---
 func place_card_on_grid(cell_coords: Vector2):

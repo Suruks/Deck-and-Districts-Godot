@@ -56,12 +56,38 @@ var card_weights = [
 	1.0   # квадрат
 ]
 
-static func generate_data(shape_type: String = "random") -> Dictionary:
+static func generate_data(shape_type: Variant = "random") -> Dictionary:
 	var c = Card.new()
-	var card_data = c.generate_random_card()  # вместо c.generate()
-	return {"blocks": card_data.blocks, "block_types": card_data.block_types}
+	var shape: Array
+	var block_types: Array = []
+	var types = ["residential", "industrial", "nature", "culture"]
 
-	
+	# --- выбираем форму ---
+	if typeof(shape_type) == TYPE_INT:
+		if shape_type >= 0 and shape_type < c.card_shapes.size():
+			shape = c.card_shapes[shape_type]
+		else:
+			push_warning("Некорректный индекс формы карты: %s" % str(shape_type))
+			shape = c.choose_weighted_shape()
+	elif typeof(shape_type) == TYPE_STRING and shape_type == "random":
+		shape = c.choose_weighted_shape()
+	else:
+		push_warning("Неподдерживаемый тип shape_type: %s" % typeof(shape_type))
+		shape = c.choose_weighted_shape()
+
+	# --- распределяем типы без повторов ---
+	var available_types = types.duplicate()
+	for i in range(shape.size()):
+		if available_types.size() > 0:
+			var t = available_types.pop_back()  # берём уникальный тип
+			block_types.append(t)
+		else:
+			# если типов не хватило — начинаем добавлять случайные
+			block_types.append(types[randi() % types.size()])
+
+	return {"blocks": shape, "block_types": block_types}
+
+
 # --- Функции выбора и генерации карт ---
 func choose_weighted_shape():
 	var total_weight = 0.0
@@ -113,13 +139,19 @@ func draw_blocks():
 		add_child(sprite)
 
 func _on_input_event(viewport, event, shape_idx):
-	if event is InputEventMouseButton and event.pressed:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MouseButton.MOUSE_BUTTON_LEFT:
 		emit_signal("card_selected")
 
 func rotate_90():
 	for i in range(blocks.size()):
 		var v = blocks[i]
 		blocks[i] = Vector2(-v.y, v.x)
+	draw_blocks()
+	
+func rotate_270():
+	for i in range(blocks.size()):
+		var v = blocks[i]
+		blocks[i] = Vector2(v.y, -v.x)
 	draw_blocks()
 
 func set_selected(value: bool):

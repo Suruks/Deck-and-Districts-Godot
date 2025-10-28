@@ -50,8 +50,6 @@ func complete_quest(q: Quest):
 	emit_signal("quest_completed", reward)
 
 
-
-
 func setup_quests(count := 3):
 	active_quests.clear()
 	for child in active_quests_container.get_children():

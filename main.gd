@@ -4,6 +4,7 @@ extends Node2D
 @onready var deck: Deck = Deck.new()
 @onready var quest_deck: QuestDeck = QuestDeck.new()
 @onready var quest_manager = QuestManager.new(quest_deck)
+@onready var score_label: Label = $CanvasLayer/Score
 
 # --- Параметры сетки ---
 var grid_size = 10
@@ -28,6 +29,8 @@ var block_colors = {
 	"nature": Color(0.3, 1.0, 0.3),
 	"culture": Color(1.0, 0.813, 0.3)
 }
+
+var total_score = 0
 
 # --- READY ---
 func _ready():
@@ -138,6 +141,9 @@ func _on_quest_completed(reward_count: int):
 	print("Квест завершён! Добавляем", reward_count, "карт(ы) в колоду.")
 	deck.add_cards(reward_count)
 	deck_label.text = str(deck.cards.size())
+	total_score += reward_count*10 
+	score_label.text = str(total_score)
+	quest_manager.compute_all_scores(grid, grid_size)
 	
 # --- Генерация руки ---
 func setup_hand():

@@ -39,7 +39,7 @@ func _calc_city_in_green(grid, grid_size):
 			var block = grid[y][x]
 			if block == "residential":
 				var near_nature = _has_neighbor(grid, x, y, grid_size, "nature")
-				bonus += 2 if near_nature else -2
+				bonus += 1 if near_nature else -1
 	return bonus
 
 
@@ -52,9 +52,9 @@ func _calc_industrial_balance(grid, grid_size):
 				var has_house = _has_neighbor(grid, x, y, grid_size, "residential")
 				var has_park = _has_neighbor(grid, x, y, grid_size, "nature")
 				if has_house and has_park:
-					bonus += 2
+					bonus += 1
 				elif has_house and not has_park:
-					bonus -= 2
+					bonus -= 1
 	return bonus
 
 
@@ -65,7 +65,7 @@ func _calc_cozy_suburbs(grid, grid_size):
 		for x in range(grid_size):
 			if grid[y][x] == "residential" and (x == 0 or y == 0 or x == grid_size - 1 or y == grid_size - 1):
 				if not _has_neighbor(grid, x, y, grid_size, "industrial"):
-					bonus += 2
+					bonus += 1
 	return bonus
 
 
@@ -84,7 +84,7 @@ func _calc_heart_of_culture(grid, grid_size):
 						if ntype != null:
 							neighbor_types[ntype] = true
 				if "residential" in neighbor_types and "industrial" in neighbor_types and "nature" in neighbor_types and "culture" in neighbor_types:
-					bonus += 3
+					bonus += 1
 	return bonus
 
 
@@ -107,14 +107,14 @@ func _calc_life_belt(grid, grid_size):
 				count += 1
 			else:
 				if count >= 4 and has_nature and has_residential:
-					bonus += 4
+					bonus += 1
 				count = 0
 				has_nature = false
 				has_residential = false
 		
 		# проверка в конце строки
 		if count >= 4 and has_nature and has_residential:
-			bonus += 4
+			bonus += 1
 
 	# Вертикальные линии
 	for x in range(grid_size):
@@ -132,13 +132,13 @@ func _calc_life_belt(grid, grid_size):
 				count += 1
 			else:
 				if count >= 4 and has_nature and has_residential:
-					bonus += 4
+					bonus += 1
 				count = 0
 				has_nature = false
 				has_residential = false
 		
 		if count >= 4 and has_nature and has_residential:
-			bonus += 4
+			bonus += 1
 
 	return bonus
 
