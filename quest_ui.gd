@@ -3,13 +3,13 @@ extends Control
 @export var quest: Quest
 
 @onready var panel : Panel = $Panel
-@onready var vbox : VBoxContainer = $Panel/VBoxContainer
-@onready var label_desc : Label = $Panel/VBoxContainer/LabelDescription
-@onready var hbox : HBoxContainer = $Panel/VBoxContainer/HBoxContainer
-@onready var progress_bar : ProgressBar = $Panel/VBoxContainer/HBoxContainer/ProgressBar
-@onready var label_progress : Label = $Panel/VBoxContainer/HBoxContainer/LabelProgress
+@onready var vbox : VBoxContainer = $Panel/MarginContainer/VBoxContainer
+@onready var label_desc : RichTextLabel = $Panel/MarginContainer/VBoxContainer/LabelDescription
+@onready var hbox : HBoxContainer = $Panel/MarginContainer/VBoxContainer/HBoxContainer
+@onready var progress_bar : ProgressBar = $Panel/MarginContainer/VBoxContainer/HBoxContainer/ProgressBar
+@onready var label_progress : Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/LabelProgress
 
-const EXTRA_PADDING := 12
+const EXTRA_PADDING := 16
 
 func _ready():
 	# убедимся, что автоперенос включён (если нужен)
@@ -20,7 +20,7 @@ func _ready():
 	label_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	# Автоматическое растяжение по тексту
 	await get_tree().process_frame
-	var text_height = label_desc.get_line_height() * label_desc.get_visible_line_count()
+	var text_height = label_desc.get_content_height()
 	custom_minimum_size.y = text_height +40
 
 
@@ -28,12 +28,7 @@ func _ready():
 		update_ui()
 
 func _update_size():
-	var panel = $Panel
-	var label_desc = $Panel/VBoxContainer/LabelDescription
-	var hbox = $Panel/VBoxContainer/HBoxContainer
-	const EXTRA_PADDING := 12
-
-	var label_height = label_desc.get_line_height() * label_desc.get_visible_line_count()
+	var label_height = label_desc.get_content_height()
 	var hbox_height = hbox.get_combined_minimum_size().y
 	panel.custom_minimum_size.y = label_height + hbox_height + EXTRA_PADDING
 
@@ -42,19 +37,9 @@ func update_ui():
 	if not quest:
 		return
 
-	# --- Получаем узлы прямо при вызове ---
-	var panel = $Panel
-	var vbox = $Panel/VBoxContainer
-	var label_desc = $Panel/VBoxContainer/LabelDescription
-	var hbox = $Panel/VBoxContainer/HBoxContainer
-	var progress_bar = $Panel/VBoxContainer/HBoxContainer/ProgressBar
-	var label_progress = $Panel/VBoxContainer/HBoxContainer/LabelProgress
-
-	const EXTRA_PADDING := 12
-
 	# --- Обновляем текст и прогресс ---
-	label_desc.text = quest.description
-	label_desc.add_theme_font_size_override("font_size", 12)
+	label_desc.bbcode_enabled = true
+	label_desc.bbcode_text  = quest.description
 	label_desc.autowrap_mode = TextServer.AUTOWRAP_WORD
 	label_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Label сам считает высоту

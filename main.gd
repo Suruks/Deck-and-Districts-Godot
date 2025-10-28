@@ -87,7 +87,6 @@ var active_quests: Array = []
 func create_quest_ui(quest: Quest) -> Control:
 	var panel_instance = quest_ui_scene.instantiate()  # QuestUI с Panel внутри
 	var label = panel_instance.get_node("Panel/VBoxContainer/LabelDescription")
-	var hbox = panel_instance.get_node("Panel/VBoxContainer/HBoxContainer")
 
 	label.text = quest.description
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -106,7 +105,7 @@ func setup_quests():
 
 	for i in range(3):
 		var q = Quest.new()
-		q.description = "+3 очка за культурный квартал, который соседствует со всеми четырьмя типами кварталов (жилой, промышленный, природный, культурный) " + str(i + 1)
+		q.description = "[font_size=12]+3 очка за культурный квартал, который соседствует со всеми четырьмя типами кварталов (жилой, промышленный, природный, культурный)[/font_size]"
 		q.reward_cards = 1 + i
 		q.current_progress = 3
 		q.target_progress = 5 + i * 2
@@ -116,8 +115,6 @@ func setup_quests():
 		ui.quest = q
 		active_quests_container.add_child(ui)
 		ui.call_deferred("update_ui")  # вместо await
-
-
 		
 # --- Генерация руки ---
 func setup_hand():
