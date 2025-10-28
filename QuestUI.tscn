@@ -1,46 +1,78 @@
-[gd_scene load_steps=2 format=3 uid="uid://qbh7ksafhqak"]
+[gd_scene load_steps=5 format=3 uid="uid://qbh7ksafhqak"]
 
 [ext_resource type="Script" uid="uid://b2ead104ruhiy" path="res://quest_ui.gd" id="1_vh80s"]
+[ext_resource type="Texture2D" uid="uid://bp5nnu6p6uawh" path="res://deck.png" id="2_582tu"]
 
-[node name="QuestUI" type="Control"]
-layout_mode = 3
-anchors_preset = 0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vh80s"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_582tu"]
+bg_color = Color(0.7607843, 0.75686276, 0.105882354, 1)
+
+[node name="QuestUI" type="VBoxContainer"]
+custom_minimum_size = Vector2(350, 0)
 script = ExtResource("1_vh80s")
 
 [node name="Panel" type="Panel" parent="."]
-layout_mode = 1
-offset_right = 350.0
-offset_bottom = 60.0
+layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel"]
 layout_mode = 1
 offset_right = 350.0
 offset_bottom = 89.0
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 10
 
 [node name="LabelDescription" type="RichTextLabel" parent="Panel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(300, 50)
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 size_flags_vertical = 2
+theme_override_font_sizes/normal_font_size = 12
 scroll_active = false
 autowrap_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
 
 [node name="LabelProgress" type="Label" parent="Panel/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.7607843, 0.75686276, 0.105882354, 1)
 vertical_alignment = 1
 
 [node name="ProgressBar" type="ProgressBar" parent="Panel/MarginContainer/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 size_flags_vertical = 4
+theme_override_constants/outline_size = 1
+theme_override_styles/background = SubResource("StyleBoxFlat_vh80s")
+theme_override_styles/fill = SubResource("StyleBoxFlat_582tu")
 show_percentage = false
+
+[node name="RewardSprite" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/HBoxContainer"]
+texture_filter = 2
+layout_mode = 2
+texture = ExtResource("2_582tu")
+expand_mode = 2
+
+[node name="RewardLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HBoxContainer/RewardSprite"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 13.0
+offset_top = -11.5
+offset_right = 32.5
+offset_bottom = 11.5
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "10"
+horizontal_alignment = 1
+vertical_alignment = 1

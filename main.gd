@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 @onready var deck: Deck = Deck.new()
+@onready var quest_deck: QuestDeck = QuestDeck.new()
 
 # --- Параметры сетки ---
 var grid_size = 10
@@ -52,20 +53,20 @@ func _ready():
 	cam.zoom = Vector2(0.66, 0.66)
 	add_child(cam)
 	cam.make_current()
-	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5) + Vector2(-200, 0)
+	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5) + Vector2(-250, 0)
 
 	# --- Генерация руки ---
 	setup_hand()
 	
 	setup_quests()
 	
-		# --- Спрайт колоды ---
+	# --- Спрайт колоды ---
 	deck_sprite = Sprite2D.new()
 	deck_sprite.texture = preload("res://deck.png")
 	$CanvasLayer.add_child(deck_sprite)
 	deck_sprite.position = Vector2(70, get_viewport_rect().size.y - 180) # над рукой
-	deck_sprite.scale = Vector2(0.12, 0.12)
-
+	deck_sprite.scale = Vector2(0.5, 0.5)
+	
 	# --- Лейбл с количеством карт ---
 	deck_label = Label.new()
 	deck_label.text = str(deck.cards.size())
@@ -78,24 +79,41 @@ func _ready():
 	$CanvasLayer.add_child(deck_label)
 	deck_label.position = Vector2(60, get_viewport_rect().size.y - 195)
 	deck_label.modulate = Color(0.0, 0.145, 0.541, 1.0)
+	
+	var input_node = preload("res://input.gd").new()
+	add_child(input_node)
+	input_node.main_ref = self
+	input_node.grid_size = grid_size
+	input_node.tile_width = tile_width
+	input_node.tile_height = tile_height
+	
+	# Квесты
+	quest_deck.init_quests()
+	setup_quests()
+
 
 @onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
 @export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
 
 var active_quests: Array = []
 
+func _on_card_rotate_requested():
+	if selected_card:
+		selected_card.rotate_90()
+		self.input_node.update_preview()
+		
 func create_quest_ui(quest: Quest) -> Control:
-	var panel_instance = quest_ui_scene.instantiate()  # QuestUI с Panel внутри
-	var label = panel_instance.get_node("Panel/VBoxContainer/LabelDescription")
+	var panel_instance = quest_ui_scene.instantiate()
+	var label: RichTextLabel = panel_instance.get_node("Panel/VBoxContainer/LabelDescription")
 
-	label.text = quest.description
+	label.bbcode_enabled = true
+	label.bbcode_text = quest.description
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	label.add_theme_font_size_override("font_size", 14)
-	
-	# Принудительно обновляем Layout, чтобы Label посчитал размер
-	panel_instance.call_deferred("_update_size")  # реализуем внутри QuestUI
+	label.fit_content = true
 
+	panel_instance.call_deferred("_update_size")
 	return panel_instance
+
 
 
 func setup_quests():
@@ -103,18 +121,18 @@ func setup_quests():
 	for child in active_quests_container.get_children():
 		child.queue_free()
 
+	# Берём 3 квеста из колоды
 	for i in range(3):
-		var q = Quest.new()
-		q.description = "[font_size=12]+3 очка за культурный квартал, который соседствует со всеми четырьмя типами кварталов (жилой, промышленный, природный, культурный)[/font_size]"
-		q.reward_cards = 1 + i
-		q.current_progress = 3
-		q.target_progress = 5 + i * 2
+		var q = quest_deck.draw_quest()
+		if q == null:
+			break
 		active_quests.append(q)
 
 		var ui = quest_ui_scene.instantiate()
 		ui.quest = q
 		active_quests_container.add_child(ui)
-		ui.call_deferred("update_ui")  # вместо await
+		ui.call_deferred("update_ui")
+
 		
 # --- Генерация руки ---
 func setup_hand():
@@ -139,7 +157,7 @@ func setup_hand():
 
 
 # --- Выбор карты ---
-func _on_card_selected(card_index):
+func _on_card_selected(selected_card_index):
 	selected_card = hand_script.selected_card
 	selected_card_index = hand_script.selected_card_index
 	print("Выбрана карта с формой:", selected_card.blocks)
@@ -148,7 +166,7 @@ func _on_card_selected(card_index):
 # --- Преобразование координат ---
 func grid_to_screen(x, y):
 	return Vector2((x - y) * tile_width / 2, (x + y) * tile_height / 2)
-
+	
 
 # --- Обновление тайла ---
 func update_tile_visual(x, y):
@@ -156,100 +174,3 @@ func update_tile_visual(x, y):
 	cell.modulate = Color(1,1,1)
 	if grid[y][x] != null:
 		cell.modulate = block_colors.get(grid[y][x], Color.WHITE)
-
-
-# --- Размещение карты ---
-func place_card_on_grid(cell_coords: Vector2):
-	if selected_card == null:
-		return
-
-	for i in range(selected_card.blocks.size()):
-		var bpos = selected_card.blocks[i] + cell_coords
-		if bpos.x < 0 or bpos.y < 0 or bpos.x >= grid_size or bpos.y >= grid_size:
-			print("Не хватает места")
-			return
-
-	for i in range(selected_card.blocks.size()):
-		var bpos = selected_card.blocks[i] + cell_coords
-		grid[bpos.y][bpos.x] = selected_card.block_types[i]
-		update_tile_visual(bpos.x, bpos.y)
-
-		# Удаляем карту из руки
-	hand_script.remove_selected_card()
-
-	# Берём новую карту из колоды
-	var new_card = deck.draw_card()
-	if new_card != null:
-		hand_script.add_card(new_card)
-		
-	# Обновляем лейбл
-	deck_label.text = str(deck.cards.size())
-		
-	selected_card = null
-	selected_card_index = -1
-	clear_preview()
-
-
-# --- Предпросмотр ---
-func show_preview(cell_coords: Vector2):
-	clear_preview()
-	if selected_card == null:
-		return
-
-	for i in range(selected_card.blocks.size()):
-		var bpos = selected_card.blocks[i] + cell_coords
-		if bpos.x < 0 or bpos.y < 0 or bpos.x >= grid_size or bpos.y >= grid_size:
-			continue
-		var ghost = Sprite2D.new()
-		ghost.texture = tile_texture
-		ghost.centered = true
-		ghost.position = grid_to_screen(bpos.x, bpos.y)
-		ghost.modulate = block_colors.get(selected_card.block_types[i], Color.WHITE)
-		ghost.modulate.a = 1.0
-		add_child(ghost)
-		ghost_tiles.append(ghost)
-
-func clear_preview():
-	for g in ghost_tiles:
-		g.queue_free()
-	ghost_tiles.clear()
-
-
-# --- Ввод ---
-func _input(event):
-	if event is InputEventKey and event.pressed:
-		if event.keycode == Key.KEY_R and selected_card:
-			selected_card.rotate_90()
-			update_preview()
-
-	if event is InputEventMouseMotion and selected_card:
-		update_preview()
-
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MouseButton.MOUSE_BUTTON_LEFT and selected_card:
-			var cell = get_hovered_cell()
-			if cell != null:
-				place_card_on_grid(cell)
-
-
-# --- Подсобные ---
-func get_hovered_cell():
-	var mouse_pos = get_global_mouse_position()
-	for y in range(grid_size):
-		for x in range(grid_size):
-			if point_in_rhomb(mouse_pos, grid_nodes[y][x].position):
-				return Vector2(x, y)
-	return null
-
-func update_preview():
-	var cell = get_hovered_cell()
-	if cell != null:
-		show_preview(cell)
-	else:
-		clear_preview()
-
-func point_in_rhomb(point: Vector2, center: Vector2) -> bool:
-	var local = point - center
-	var dx = abs(local.x) / (tile_width / 2)
-	var dy = abs(local.y) / (tile_height / 2)
-	return dx + dy <= 1
