@@ -35,7 +35,7 @@ var total_score = 0
 # --- READY ---
 func _ready():
 	randomize()
-	deck.init_deck(16)
+	deck.init_deck(23)
 	
 	# --- Сетка ---
 	grid_nodes.clear()

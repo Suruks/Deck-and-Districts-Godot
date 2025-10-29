@@ -77,6 +77,7 @@ static func generate_data(shape_type: Variant = "random") -> Dictionary:
 
 	# --- распределяем типы без повторов ---
 	var available_types = types.duplicate()
+	available_types.shuffle()
 	for i in range(shape.size()):
 		if available_types.size() > 0:
 			var t = available_types.pop_back()  # берём уникальный тип
