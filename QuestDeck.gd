@@ -78,9 +78,9 @@ func init_quests():
 	# 6 — Душа города
 	var q6 = Quest.new()
 	q6.quest_type = "soul_of_city"
-	q6.description = colorize_text("Построй цепочку из 8 культурных районов, соединённых по соседству.")
+	q6.description = colorize_text("Построй 3 цепочки из 4 районов одного типа (тип разных цепочек может отличаться)")
 	q6.reward_cards = 4
-	q6.target_progress = 8
+	q6.target_progress = 3
 	quests.append(q6)
 
 	# 7 — Квадрат индустрии
@@ -99,39 +99,31 @@ func init_quests():
 	q8.target_progress = 5
 	quests.append(q8)
 
-	# 9 — Неповоротливый архитектор
-	var q9 = Quest.new()
-	q9.quest_type = "no_rotation"
-	q9.description = colorize_text("Используй 10 карт подряд, не поворачивая их.")
-	q9.reward_cards = 5
-	q9.target_progress = 10
-	#quests.append(q9)
-
-	# 10 — Эко-жильё
+	# 9 — Эко-жильё
 	var q10 = Quest.new()
 	q10.quest_type = "eco_homes"
-	q10.description = colorize_text("Построй 3 жилых района, соседствующих только с природными.")
+	q10.description = colorize_text("Построй 4 жилых района, соседствующих минимум с 3 природными.")
 	q10.reward_cards = 5
-	q10.target_progress = 3
+	q10.target_progress = 4
 	quests.append(q10)
 
-	# 11 — Диагональный город
+	# 10 — Диагональный город
 	var q11 = Quest.new()
 	q11.quest_type = "diagonal_city"
-	q11.description = colorize_text("Построй 3 диагональные линии: из 4 жилых районов, из 4 промышленных и из 4 культурных.")
+	q11.description = colorize_text("Построй 3 диагональные линии из 4 районов одного типа (тип разных линий может отличаться).")
 	q11.reward_cards = 6
 	q11.target_progress = 3
 	quests.append(q11)
 
-	# 12 — Изолированные заводы
+	# 11 — Изолированные заводы
 	var q12 = Quest.new()
 	q12.quest_type = "isolated_factories"
-	q12.description = colorize_text("Построй цепочку из 6 промышленных районов, при этом ни один из них не должен касаться жилого района.")
+	q12.description = colorize_text("Построй группу из 6 промышленных районов, при этом ни один из них не должен касаться жилого района.")
 	q12.reward_cards = 4
 	q12.target_progress = 6
 	quests.append(q12)
 
-	# 13 — Соседство искусства
+	# 12 — Соседство искусства
 	var q13 = Quest.new()
 	q13.quest_type = "art_neighborhood"
 	q13.description = colorize_text("Построй квадрат 2x2 из жилых районов и квадрат 2x2 из культурных.")
@@ -139,7 +131,7 @@ func init_quests():
 	q13.target_progress = 2
 	quests.append(q13)
 
-	# 14 — Природное равновесие
+	# 13 — Природное равновесие
 	var q14 = Quest.new()
 	q14.quest_type = "natural_balance"
 	q14.description = colorize_text("+1 прогресс за каждый природный район. -1 прогресса за каждый промышленный.")
@@ -147,7 +139,7 @@ func init_quests():
 	q14.target_progress = 6
 	quests.append(q14)
 
-	# 15 — Культурная уединённость
+	# 14 — Культурная уединённость
 	var q15 = Quest.new()
 	q15.quest_type = "culture_isolation"
 	q15.description = colorize_text("Построй 7 культурных районов, соседствующих не больше, чем с двумя другими районами.")
@@ -155,7 +147,7 @@ func init_quests():
 	q15.target_progress = 7
 	quests.append(q15)
 
-	# 16 — Индустриальный ряд
+	# 15 — Индустриальный ряд
 	var q16 = Quest.new()
 	q16.quest_type = "industrial_row"
 	q16.description = colorize_text("Построй 7 промышленных районов в одном ряду.")
@@ -163,7 +155,7 @@ func init_quests():
 	q16.target_progress = 7
 	quests.append(q16)
 
-	# 17 — Городская масса
+	# 16 — Городская масса
 	var q17 = Quest.new()
 	q17.quest_type = "urban_mass"
 	q17.description = colorize_text("Построй группу из 12 районов любого типа.")
@@ -171,7 +163,7 @@ func init_quests():
 	q17.target_progress = 12
 	quests.append(q17)
 
-	# 18 — Природные линии
+	# 17 — Природные линии
 	var q18 = Quest.new()
 	q18.quest_type = "natural_lines"
 	q18.description = colorize_text("Должно быть 4 ряда с ровно 4 природными районами.")
@@ -179,7 +171,7 @@ func init_quests():
 	q18.target_progress = 4
 	quests.append(q18)
 
-	# 19 — Промышленный контроль
+	# 18 — Промышленный контроль
 	var q19 = Quest.new()
 	q19.quest_type = "industrial_control"
 	q19.description = colorize_text("+1 прогресс за каждый промышленный район, окружённый другими районами. -2 прогресса за каждый промышленный район, окружённый менее чем с 4 сторон.")
