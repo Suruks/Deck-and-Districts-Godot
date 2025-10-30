@@ -47,7 +47,7 @@ func place_card_on_grid(cell_coords: Vector2):
 			return
 	
 	# Старение всех блоков
-	CityBlock.age_all_blocks(main_ref.grid)
+	CityBlock.age_all_blocks(main_ref.grid, 1)
 	
 	# Размещение блоков
 	for i in range(selected_card.blocks.size()):

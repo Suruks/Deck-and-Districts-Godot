@@ -16,7 +16,10 @@ func draw_card():
 func add_cards(count: int = 1):
 	for i in range(count):
 		var new_card = Card.generate_data("random")
-		var pos = randi() % (cards.size() + 1) # случайная позиция от 0 до размера колоды
+		var pos = randi() % (cards.size() + 1)
 		cards.insert(pos, new_card)
-		
-	
+
+func add_cards_from_data(cards_data: Array):
+	for card_data in cards_data:
+		var pos = randi() % (cards.size() + 1)
+		cards.insert(pos, card_data)
