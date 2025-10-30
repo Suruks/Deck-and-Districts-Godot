@@ -1,5 +1,7 @@
 extends Node
 
+const Main = preload("res://main.gd")
+
 signal card_placed()
 signal card_rotated()
 
@@ -36,37 +38,46 @@ func place_card_on_grid(cell_coords: Vector2):
 	var selected_card = main_ref.selected_card
 	if selected_card == null:
 		return
-
+	
 	# Проверка, помещается ли карта в сетку
 	for i in range(selected_card.blocks.size()):
 		var bpos = selected_card.blocks[i] + cell_coords
-		if bpos.x < 0 or bpos.y < 0 or bpos.x >= grid_size or bpos.y >= grid_size:
+		if bpos.x < 0 or bpos.y < 0 or bpos.x >= main_ref.grid_size or bpos.y >= main_ref.grid_size:
 			print("❌ Не хватает места для размещения карты")
 			return
-
+	
+	# Старение всех блоков
+	CityBlock.age_all_blocks(main_ref.grid)
+	
 	# Размещение блоков
 	for i in range(selected_card.blocks.size()):
 		var bpos = selected_card.blocks[i] + cell_coords
-		main_ref.grid[bpos.y][bpos.x] = selected_card.block_types[i]
-		main_ref.update_tile_visual(bpos.x, bpos.y)
 
-	# Удаляем карту из руки
+		# Если на этом месте уже есть блок — удаляем
+		var old_block = main_ref.grid[bpos.y][bpos.x]
+		if old_block != null and is_instance_valid(old_block):
+			old_block.queue_free()
+
+		# Создаём новый блок
+		var new_block = CityBlock.new()
+		new_block.type = selected_card.block_types[i]
+		new_block.place_at_screen_position(main_ref.grid_to_screen(bpos.x, bpos.y))
+		main_ref.add_child(new_block)
+		main_ref.grid[bpos.y][bpos.x] = new_block
+	
+	# Удаляем карту из руки и добираем новую
 	main_ref.hand_script.remove_selected_card()
-
-	# Берём новую карту из колоды
 	var new_card = main_ref.deck.draw_card()
 	if new_card != null:
 		main_ref.hand_script.add_card(new_card)
-
-	# Обновляем лейбл
 	main_ref.deck_label.text = str(main_ref.deck.cards.size())
 	
-		
 	# Очистка состояния
 	main_ref.selected_card = null
 	main_ref.selected_card_index = -1
 	clear_preview()
 	card_placed.emit()
+
 
 # --- Предпросмотр ---
 func update_preview():
@@ -89,7 +100,7 @@ func show_preview(cell_coords: Vector2):
 		ghost.texture = main_ref.tile_texture
 		ghost.centered = true
 		ghost.position = grid_to_screen(bpos.x, bpos.y)
-		ghost.modulate = main_ref.block_colors.get(main_ref.selected_card.block_types[i], Color.WHITE)
+		ghost.modulate = CityBlock.get_color(main_ref.selected_card.block_types[i])
 		ghost.modulate.a = 1.0
 		main_ref.add_child(ghost)
 		ghost_tiles.append(ghost)

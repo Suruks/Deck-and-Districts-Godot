@@ -6,15 +6,13 @@ extends Node2D
 @onready var quest_manager = QuestManager.new(quest_deck)
 @onready var score_label: Label = $CanvasLayer/Score
 
-# --- Параметры сетки ---
 var grid_size = 10
 var tile_width = 128
 var tile_height = 96
 var tile_texture = preload("res://tile.png")
 var grid_nodes = []
-var grid = []
+var grid = [] # теперь будут CityBlock
 
-# --- Состояние ---
 var selected_card = null
 var selected_card_index = -1
 var ghost_tiles = []
@@ -22,20 +20,12 @@ var ghost_tiles = []
 var deck_sprite: Sprite2D
 var deck_label: Label
 
-# --- Цвета кварталов ---
-var block_colors = {
-	"residential": Color(0.3, 0.837, 1.0),
-	"industrial": Color(1.0, 0.3, 0.3),
-	"nature": Color(0.3, 1.0, 0.3),
-	"culture": Color(1.0, 0.813, 0.3)
-}
-
 var total_score = 0
 
 # --- READY ---
 func _ready():
 	randomize()
-	deck.init_deck(23)
+	deck.init_deck(20)
 	
 	# --- Сетка ---
 	grid_nodes.clear()
@@ -50,42 +40,37 @@ func _ready():
 			tile.position = grid_to_screen(x, y)
 			add_child(tile)
 			grid_nodes[y].append(tile)
-			grid[y].append(null)
+			grid[y].append(null) # пока пусто, будут CityBlock
 
-	# --- Камера ---
+	# Камера
 	var cam = Camera2D.new()
 	cam.zoom = Vector2(0.66, 0.66)
 	add_child(cam)
 	cam.make_current()
-	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5) + Vector2(-250, 0)
+	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5) + Vector2(-250,0)
 
-	# --- Генерация руки ---
+	# Рука
 	setup_hand()
 	
-	# --- Спрайт колоды ---
+	# Колода
 	deck_sprite = Sprite2D.new()
 	deck_sprite.texture = preload("res://deck.png")
 	$CanvasLayer.add_child(deck_sprite)
-	deck_sprite.position = Vector2(70, get_viewport_rect().size.y - 180) # над рукой
-	deck_sprite.scale = Vector2(0.5, 0.5)
+	deck_sprite.position = Vector2(70, get_viewport_rect().size.y - 180)
+	deck_sprite.scale = Vector2(0.5,0.5)
 	
-	# --- Лейбл с количеством карт ---
 	deck_label = Label.new()
 	deck_label.text = str(deck.cards.size())
-	
 	var font_var = FontVariation.new()
 	font_var.base_font = load("res://ARLRDBD.ttf")
 	deck_label.add_theme_font_override("font", font_var)
 	deck_label.add_theme_font_size_override("font_size", 36)
-
 	deck_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
 	deck_label.vertical_alignment = VerticalAlignment.VERTICAL_ALIGNMENT_CENTER
-
 	$CanvasLayer.add_child(deck_label)
-	deck_label.position = Vector2(47, get_viewport_rect().size.y - 195)
-	deck_label.modulate = Color(0, 0, 0, 1)
+	deck_label.position = Vector2(47,get_viewport_rect().size.y-195)
+	deck_label.modulate = Color(0,0,0,1)
 
-	
 	var input_node = preload("res://input.gd").new()
 	add_child(input_node)
 	input_node.main_ref = self
@@ -93,18 +78,13 @@ func _ready():
 	input_node.tile_width = tile_width
 	input_node.tile_height = tile_height
 	input_node.connect("card_placed", Callable(self, "update_quest_scores"))
-	
+
 	# Квесты
-	# Создаём менеджер квестов
 	quest_deck.init_quests()
-	
 	quest_manager = QuestManager.new(quest_deck)
 	quest_manager.active_quests_container = active_quests_container
 	quest_manager.quest_ui_scene = quest_ui_scene
-	quest_manager.setup_quests() # теперь active_quests заполнен
-	quest_manager.active_quests_container = active_quests_container
-	quest_manager.quest_ui_scene = quest_ui_scene
-	
+	quest_manager.setup_quests()
 	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))
 	
 
@@ -178,10 +158,3 @@ func _on_card_selected(selected_card_index):
 func grid_to_screen(x, y):
 	return Vector2((x - y) * tile_width / 2, (x + y) * tile_height / 2)
 	
-
-# --- Обновление тайла ---
-func update_tile_visual(x, y):
-	var cell = grid_nodes[y][x]
-	cell.modulate = Color(1,1,1)
-	if grid[y][x] != null:
-		cell.modulate = block_colors.get(grid[y][x], Color.WHITE)
