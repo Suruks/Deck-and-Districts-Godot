@@ -3,6 +3,8 @@ class_name Deck
 
 var cards = []
 
+const max_cards = 40
+
 func init_deck(count: int = 12):
 	cards.clear()
 	for i in range(count):
@@ -13,12 +15,19 @@ func draw_card():
 		return null
 	return cards.pop_front()
 	
-func add_cards(count: int = 1):
+func add_cards(count: int = 1) -> int:
+	var added = 0
 	for i in range(count):
+		if cards.size() >= max_cards:
+			break
 		var new_card = Card.generate_data("random")
 		var pos = randi() % (cards.size() + 1)
 		cards.insert(pos, new_card)
+		added += 1
+	return added
 
+
+#при замешивании карт из руки
 func add_cards_from_data(cards_data: Array):
 	for card_data in cards_data:
 		var pos = randi() % (cards.size() + 1)

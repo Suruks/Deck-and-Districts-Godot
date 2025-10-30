@@ -27,7 +27,7 @@ var total_score = 0
 # --- READY ---
 func _ready():
 	randomize()
-	deck.init_deck(20)
+	deck.init_deck(23)
 	
 	# --- Сетка ---
 	grid_nodes.clear()
@@ -128,11 +128,16 @@ func update_quest_scores():
 
 func _on_quest_completed(reward_count: int):
 	print("Квест завершён! Добавляем", reward_count, "карт(ы) в колоду.")
-	deck.add_cards(reward_count)
+	var added = deck.add_cards(reward_count)
+	var not_added = reward_count - added
 	deck_label.text = str(deck.cards.size())
-	total_score += reward_count*10
+	
+	# очки: добавленные х10, не добавленные из-за лимита х20
+	total_score += added * 10 + not_added * 20
 	score_label.text = str(total_score)
+	
 	quest_manager.compute_all_scores(grid, grid_size)
+
 
 # --- Генерация руки ---
 func setup_hand():
