@@ -470,26 +470,27 @@ func _calc_industrial_control(grid, grid_size):
 	return score
 
 
-# --- 20. Разнообразный квартал ---
 func _calc_diverse_block(grid, grid_size):
-	for y in range(grid_size - 3):
-		for x in range(grid_size - 3):
+	var max_diversity := 0
+	
+	for y in range(grid_size - 2):
+		for x in range(grid_size - 2):
+			var types := {}
 			var valid := true
-			for dy in range(4):
-				for dx in range(4):
-					var cell = grid[y+dy][x+dx]
+			
+			for dy in range(3):
+				for dx in range(3):
+					var cell = grid[y + dy][x + dx]
 					if cell == null:
 						valid = false
 						break
-					for dir in [[1,0],[-1,0],[0,1],[0,-1]]:
-						var nx = x+dx+dir[0]
-						var ny = y+dy+dir[1]
-						if nx >= x and nx < x+4 and ny >= y and ny < y+4:
-							if _is_type(grid[ny][nx], cell.type):
-								valid = false
-								break
+					types[cell.type] = true
 				if not valid:
 					break
+			
 			if valid:
-				return 1
-	return 0
+				var diversity = types.keys().size()
+				if diversity > max_diversity:
+					max_diversity = diversity
+	
+	return max_diversity

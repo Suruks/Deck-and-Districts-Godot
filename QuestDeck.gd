@@ -190,8 +190,8 @@ func init_quests():
 	# 20 — Разнообразный квартал
 	var q20 = Quest.new()
 	q20.quest_type = "diverse_block"
-	q20.description = colorize_text("Построй область 4x4, где каждый район отличается по типу от всех соседей.")
-	q20.reward_cards = 6
+	q20.description = colorize_text("Построй область 3x3, где каждый район отличается по типу от всех соседей.")
+	q20.reward_cards = 3
 	q20.target_progress = 1
 	quests.append(q20)
 

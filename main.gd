@@ -7,9 +7,10 @@ extends Node2D
 @onready var score_label: Label = $CanvasLayer/Score
 
 var grid_size = 10
-var tile_width = 128
-var tile_height = 96
+var tile_width = 124
+var tile_height = 92
 var tile_texture = preload("res://tile.png")
+var old_texture = preload("res://old_tile.png")
 var grid_nodes = []
 var grid = [] # теперь будут CityBlock
 
@@ -40,6 +41,14 @@ func _ready():
 			tile.position = grid_to_screen(x, y)
 			add_child(tile)
 			grid_nodes[y].append(tile)
+			
+			#var cracks = Sprite2D.new()
+			#cracks.texture = old_texture
+			#cracks.centered = true
+			#cracks.position = grid_to_screen(x, y)
+			#add_child(cracks)
+			#grid_nodes[y].append(cracks)
+			
 			grid[y].append(null) # пока пусто, будут CityBlock
 
 	# Камера
