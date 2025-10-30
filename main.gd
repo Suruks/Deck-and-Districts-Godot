@@ -6,7 +6,7 @@ extends Node2D
 @onready var quest_manager = QuestManager.new(quest_deck)
 @onready var score_label: Label = $CanvasLayer/Score
 
-var grid_size = 10
+var grid_size = 11
 var tile_width = 124
 var tile_height = 92
 var tile_texture = preload("res://tile.png")
@@ -52,11 +52,12 @@ func _ready():
 			grid[y].append(null) # пока пусто, будут CityBlock
 
 	# Камера
+	var cam_scene = preload("res://camera_controller.gd")
 	var cam = Camera2D.new()
-	cam.zoom = Vector2(0.66, 0.66)
+	cam.set_script(cam_scene)
 	add_child(cam)
-	cam.make_current()
-	cam.position = grid_to_screen(grid_size/2 - 0.5, grid_size/2 - 0.5) + Vector2(-250,0)
+	cam.zoom = Vector2(0.66, 0.66)
+	cam.position = grid_to_screen(grid_size / 2 - 0.5, grid_size / 2 - 0.5) + Vector2(-250, 20)
 
 	# Рука
 	setup_hand()
