@@ -26,7 +26,6 @@ func add_cards(count: int = 1) -> int:
 		added += 1
 	return added
 
-
 #при замешивании карт из руки
 func add_cards_from_data(cards_data: Array):
 	for card_data in cards_data:

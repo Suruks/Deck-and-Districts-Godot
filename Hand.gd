@@ -32,6 +32,10 @@ func draw_hand():
 		card_instance.connect("card_selected", Callable(self, "_on_card_selected").bind(i))
 
 func _on_card_selected(card_index):
+	# Снимаем выделение со всех карт
+	for i in range(hand_nodes.size()):
+		hand_nodes[i].set_selected(i == card_index)  # выделяем только выбранную
+
 	selected_card_index = card_index
 	selected_card = hand_nodes[card_index]
 	emit_signal("card_selected", card_index)
@@ -44,3 +48,13 @@ func remove_selected_card():
 	selected_card_index = -1
 	selected_card = null
 	draw_hand()
+	
+func clear_selection():
+	# 1. Снимаем выделение со всех узлов карт
+	for card_node in hand_nodes:
+		# Предполагается, что card.gd имеет функцию set_selected(bool)
+		card_node.set_selected(false)
+		
+	# 2. Обнуляем внутреннее состояние руки
+	selected_card_index = -1
+	selected_card = null

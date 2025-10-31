@@ -9,6 +9,8 @@ script = ExtResource("1_kikvd")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_rjlel")
 
+[node name="BlocksContainer" type="Node2D" parent="."]
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Area2D" type="Area2D" parent="."]

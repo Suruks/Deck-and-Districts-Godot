@@ -10,6 +10,7 @@ const Globals = preload("res://globals.gd")
 
 @onready var background = $Sprite2D
 @onready var area = $Area2D
+@onready var blocks_container = $BlocksContainer # <-- Получаем новый контейнер
 
 var selected = false
 var tile_texture = preload("res://tile.png")
@@ -111,10 +112,9 @@ func generate_random_card():
 	return {"blocks": shape, "block_types": block_types}
 
 func draw_blocks():
-	# Удаляем старые блоки, кроме фона и Area2D
-	for child in get_children():
-		if child != background and child != area:
-			child.queue_free()
+	# 1. ЧИСТКА: Удаляем ВСЕ дочерние узлы ИЗ КОНТЕЙНЕРА
+	for child in blocks_container.get_children():
+		child.queue_free()
 
 	# Найдём центр формы, чтобы карта выглядела ровно по центру
 	var min_x = INF
@@ -137,11 +137,12 @@ func draw_blocks():
 		sprite.scale = Vector2(block_scale, block_scale)
 		sprite.position = iso_to_screen(blocks[i]) - center_offset
 		sprite.modulate = Globals.block_colors.get(block_types[i], Color.WHITE)
-		add_child(sprite)
+		blocks_container.add_child(sprite)
 
 func _on_input_event(viewport, event, shape_idx):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MouseButton.MOUSE_BUTTON_LEFT:
 		emit_signal("card_selected")
+		set_selected(true)
 
 func rotate_90():
 	for i in range(blocks.size()):
@@ -157,4 +158,4 @@ func rotate_270():
 
 func set_selected(value: bool):
 	selected = value
-	scale = Vector2(0.6, 0.6) if selected else Vector2(0.5, 0.5)
+	scale = Vector2(0.55, 0.55) if selected else Vector2(0.5, 0.5)

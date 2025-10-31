@@ -39,7 +39,7 @@ func complete_quest(q: Quest):
 			# Вставляем именно на место старого UI
 			# Если нужно сохранять порядок, используем add_child с индексом
 			active_quests_container.add_child(new_ui)
-			new_ui.move_child(new_ui, index)
+			active_quests_container.move_child(new_ui, index)
 			new_ui.call_deferred("update_ui")
 	else:
 		# если UI-ноду не нашли, просто убираем квест из списка
@@ -47,7 +47,7 @@ func complete_quest(q: Quest):
 		
 	#добавить карты в колоду
 	var reward = q.reward_cards
-	emit_signal("quest_completed", reward)
+	call_deferred("emit_signal", "quest_completed", reward)
 
 
 func setup_quests(count := 3):
