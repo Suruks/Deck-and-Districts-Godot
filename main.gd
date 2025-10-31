@@ -2,10 +2,10 @@ extends Node2D
 
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 @onready var quest_deck: QuestDeck = QuestDeck.new()
-@onready var quest_manager = QuestManager.new(quest_deck)
 @onready var score_label: Label = $CanvasLayer/Score
 
 var card_manager: CardManager
+var quest_manager: QuestManager
 
 const InputScriptClass = preload("res://input.gd")
 var input_script: InputClass
@@ -91,11 +91,14 @@ func _ready():
 
 	# Квесты
 	quest_deck.init_quests()
-	quest_manager = QuestManager.new(quest_deck)
+	quest_manager = QuestManager.new(quest_deck, quest_ui_scene)
+	add_child(quest_manager) # Добавьте в дерево, если он у вас не был добавлен
+	
 	quest_manager.active_quests_container = active_quests_container
-	quest_manager.quest_ui_scene = quest_ui_scene
+	# Теперь менеджер может создавать UI без ошибок
 	quest_manager.setup_quests()
 	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))
+# ...
 
 @onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
 @export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")

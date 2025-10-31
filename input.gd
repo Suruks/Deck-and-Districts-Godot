@@ -7,7 +7,7 @@ signal rotation_requested(clockwise: bool)
 signal placement_attempted()
 
 # --- Ввод ---
-func _input(event):
+func _unhandled_input(event):
 	if not is_active:
 		return
 
