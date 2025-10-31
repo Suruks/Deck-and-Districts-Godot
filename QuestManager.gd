@@ -59,6 +59,7 @@ func setup_quests(count := 3):
 		var q = quest_deck.draw_quest()
 		if q == null:
 			break
+		q.reward_cards *= 0.75
 		active_quests.append(q)
 
 		var ui = quest_ui_scene.instantiate()

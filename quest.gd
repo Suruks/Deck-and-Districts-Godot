@@ -55,6 +55,28 @@ func calculate_score(grid: Array, grid_size: int) -> int:
 			score = _calc_diverse_neighbors(grid, grid_size)
 		"monoculture":
 			score = _calc_uniform_rows(grid, grid_size)
+		"monoculture":
+			score = _calc_uniform_rows(grid, grid_size)
+		"neighboring_nature":
+			score = _calc_neighboring_nature(grid, grid_size) # q23
+		"residential_isolation":
+			score = _calc_residential_isolation(grid, grid_size) # q24
+		"edge_residential_pair":
+			score = _calc_edge_residential_pair(grid, grid_size) # q25
+		"nature_mix":
+			score = _calc_nature_mix(grid, grid_size) # q26
+		"type_difference":
+			score = _calc_type_difference(grid, grid_size) # q27
+		"culture_neighboring_nature":
+			score = _calc_culture_neighboring_nature(grid, grid_size) # q28
+		"culture_neighboring_residential":
+			score = _calc_culture_neighboring_residential(grid, grid_size) # q29
+		"culture_no_industry":
+			score = _calc_culture_no_industry(grid, grid_size) # q30
+		"mixed_rows":
+			score = _calc_mixed_rows(grid, grid_size) # q31
+		"unique_squares":
+			score = _calc_unique_squares(grid, grid_size) # q32
 		_:
 			score = 0
 
@@ -88,17 +110,23 @@ func _calc_city_in_green(grid, grid_size):
 
 # --- 2. Баланс индустрии ---
 func _calc_industrial_balance(grid, grid_size):
-	var bonus := 0
+	var progress := 0
+	
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
-				var has_house = _has_neighbor(grid, x, y, grid_size, "residential")
-				var has_park = _has_neighbor(grid, x, y, grid_size, "nature")
-				if has_house and has_park:
-					bonus += 1
-				elif has_house and not has_park:
-					bonus -= 1
-	return bonus
+				var has_industrial = _has_neighbor(grid, x, y, grid_size, "industrial")
+				var has_culture = _has_neighbor(grid, x, y, grid_size, "culture")
+				var has_residential = _has_neighbor(grid, x, y, grid_size, "residential")
+				var has_nature = _has_neighbor(grid, x, y, grid_size, "nature")
+				
+				if has_industrial and has_culture:
+					progress += 1
+				elif not has_residential and not has_nature:
+					progress -= 2
+	
+	return progress
+
 
 
 # --- 3. Комфортные окраины ---
@@ -115,20 +143,27 @@ func _calc_cozy_suburbs(grid, grid_size):
 # --- 4. Сердце культуры ---
 func _calc_heart_of_culture(grid, grid_size):
 	var bonus := 0
+	
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "culture"):
 				var neighbor_types := {}
-				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+				
+				for dir in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
 					var nx = x + dir[0]
 					var ny = y + dir[1]
-					if nx >=0 and ny >=0 and nx<grid_size and ny<grid_size:
+					
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
 						var nblock = grid[ny][nx]
 						if nblock != null and nblock is CityBlock:
 							neighbor_types[nblock.type] = true
-				if "residential" in neighbor_types and "industrial" in neighbor_types and "nature" in neighbor_types and "culture" in neighbor_types:
+				
+				# Если есть хотя бы три разных типа соседей — бонус
+				if neighbor_types.keys().size() >= 3:
 					bonus += 1
+	
 	return bonus
+
 
 
 # --- 5. Пояс жизни (горизонтальные/вертикальные линии) ---
@@ -258,7 +293,7 @@ func _calc_eco_industry(grid, grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
 				industrial_count += 1
-				if not _has_neighbor(grid, x, y, grid_size, "nature"):
+				if not _has_neighbor(grid, x, y, grid_size, "culture"):
 					return 0
 	return 5 if industrial_count >= 5 else 0
 
@@ -600,3 +635,247 @@ func _calc_uniform_rows(grid, grid_size):
 			progress += 1
 	
 	return progress
+
+func _calc_neighboring_nature(grid, grid_size):
+	var count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "residential"):
+				var nature_neighbors := 0
+				
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "nature"):
+							nature_neighbors += 1
+							
+				if nature_neighbors >= 2:
+					count += 1
+					
+	return count
+	
+func _calc_residential_isolation(grid, grid_size):
+	var isolated_residences := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "residential"):
+				var is_isolated := true
+				
+				# Проверка в радиусе 2-х клеток (включая саму клетку, но она не industrial)
+				for dy in range(-2, 3):
+					for dx in range(-2, 3):
+						var nx = x + dx
+						var ny = y + dy
+						
+						if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+							# Исключаем текущую ячейку
+							if dx == 0 and dy == 0:
+								continue
+								
+							if _is_type(grid[ny][nx], "industrial"):
+								is_isolated = false
+								break
+					if not is_isolated:
+						break
+						
+				if is_isolated:
+					isolated_residences += 1
+					
+	return isolated_residences
+	
+func _calc_edge_residential_pair(grid, grid_size):
+	var count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			# Проверка, находится ли район на краю поля
+			var is_on_edge = (x == 0 or y == 0 or x == grid_size - 1 or y == grid_size - 1)
+			
+			if is_on_edge and _is_type(grid[y][x], "residential"):
+				var has_res_neighbor := false
+				
+				# Проверка на наличие соседнего жилого района
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "residential"):
+							has_res_neighbor = true
+							break
+							
+				if has_res_neighbor:
+					count += 1
+					
+	return count
+	
+func _calc_nature_mix(grid, grid_size):
+	var count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "nature"):
+				var has_residential := false
+				var has_industrial := false
+				
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "residential"):
+							has_residential = true
+						elif _is_type(grid[ny][nx], "industrial"):
+							has_industrial = true
+							
+				if has_residential and has_industrial:
+					count += 1
+					
+	return count
+	
+func _calc_type_difference(grid, grid_size):
+	var residential_count := 0
+	var industrial_count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "residential"):
+				residential_count += 1
+			elif _is_type(grid[y][x], "industrial"):
+				industrial_count += 1
+				
+	var difference = abs(industrial_count - residential_count)
+	
+	# Прогресс = достигнутая разница
+	return difference
+	
+func _calc_culture_neighboring_nature(grid, grid_size):
+	var count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "culture"):
+				var nature_neighbors := 0
+				
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "nature"):
+							nature_neighbors += 1
+							
+				if nature_neighbors >= 2:
+					count += 1
+					
+	return count
+	
+func _calc_culture_neighboring_residential(grid, grid_size):
+	var count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "culture"):
+				var residential_neighbors := 0
+				
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "residential"):
+							residential_neighbors += 1
+							
+				if residential_neighbors >= 2:
+					count += 1
+					
+	return count
+	
+func _calc_culture_no_industry(grid, grid_size):
+	var count := 0
+
+	for y in range(grid_size):
+		for x in range(grid_size):
+			if _is_type(grid[y][x], "culture"):
+				var has_industrial_neighbor := false
+				
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "industrial"):
+							has_industrial_neighbor = true
+							break
+							
+				if not has_industrial_neighbor:
+					count += 1
+					
+	return count
+	
+func _calc_mixed_rows(grid, grid_size):
+	var mixed_lines := 0
+	var types = ["residential", "industrial", "culture", "nature"]
+
+	# Проверка горизонтальных рядов
+	for y in range(grid_size):
+		var found_types := {}
+		for x in range(grid_size):
+			var cell = grid[y][x]
+			if cell != null and cell is CityBlock:
+				found_types[cell.type] = true
+				
+		var all_types_present := true
+		for t in types:
+			if not found_types.has(t):
+				all_types_present = false
+				break
+				
+		if all_types_present:
+			mixed_lines += 1
+
+	# Проверка вертикальных рядов
+	for x in range(grid_size):
+		var found_types := {}
+		for y in range(grid_size):
+			var cell = grid[y][x]
+			if cell != null and cell is CityBlock:
+				found_types[cell.type] = true
+				
+		var all_types_present := true
+		for t in types:
+			if not found_types.has(t):
+				all_types_present = false
+				break
+				
+		if all_types_present:
+			mixed_lines += 1
+
+	return mixed_lines
+	
+func _calc_unique_squares(grid, grid_size):
+	var unique_squares := 0
+	var types = ["residential", "industrial", "culture", "nature"]
+
+	# Проход по всем возможным верхним левым углам квадратов 2x2
+	for y in range(grid_size - 1):
+		for x in range(grid_size - 1):
+			var cell_types := {}
+			var cells_filled := true
+
+			# Проверка 4 ячеек в квадрате 2x2
+			for dy in range(2):
+				for dx in range(2):
+					var cell = grid[y+dy][x+dx]
+					if cell != null and cell is CityBlock:
+						cell_types[cell.type] = true
+					else:
+						cells_filled = false
+						break
+				if not cells_filled:
+					break
+					
+			if cells_filled and cell_types.keys().size() == 4:
+				# Квадрат заполнен, и все 4 типа уникальны
+				unique_squares += 1
+					
+	return unique_squares

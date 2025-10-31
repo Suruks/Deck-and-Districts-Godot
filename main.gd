@@ -115,8 +115,7 @@ func create_quest_ui(quest: Quest) -> Control:
 func update_quest_scores():
 	var current_grid = grid_manager.get_grid()
 	var current_grid_size = grid_manager.get_grid_size()
-	total_score = quest_manager.compute_all_scores(current_grid, current_grid_size)
-	score_label.text = str(total_score)
+	quest_manager.compute_all_scores(current_grid, current_grid_size)
 
 func _on_quest_completed(reward_count: int):
 	print("Квест завершён! Добавляем", reward_count, "карт(ы) в колоду.")
