@@ -32,6 +32,7 @@ func _ready():
 	card_manager.init_deck(23)
 	
 	card_manager.setup_hand($CanvasLayer)
+	hand_script = card_manager.hand
 	
 	input_script.placement_attempted.connect(Callable(self, "_on_placement_attempted"))
 	input_script.rotation_requested.connect(card_manager.handle_rotation_request)
@@ -81,7 +82,11 @@ func _ready():
 
 	# Кнопка replace_hand
 	replace_hand_sprite = TextureButton.new()
-	replace_hand_sprite.texture_normal = preload("res://replace_hand.png")
+	var texture = load("res://replace_hand.png")
+	replace_hand_sprite.texture_normal = texture
+	replace_hand_sprite.custom_minimum_size = texture.get_size()
+	replace_hand_sprite.size = texture.get_size() # или set_size(texture.get_size()
+	
 	replace_hand_sprite.mouse_filter = Control.MOUSE_FILTER_STOP
 	$CanvasLayer.add_child(replace_hand_sprite)
 	replace_hand_sprite.position = Vector2(125, get_viewport_rect().size.y - 210)
@@ -98,7 +103,6 @@ func _ready():
 	# Теперь менеджер может создавать UI без ошибок
 	quest_manager.setup_quests()
 	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))
-# ...
 
 @onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
 @export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
@@ -186,9 +190,10 @@ func _update_deck_ui():
 	
 # --- Replace hand ---
 func _on_replace_hand_input(event: InputEvent) -> void:
+	
 	if replace_hand_sprite.texture_normal == null or hand_script == null:
 		return
-
+	
 	# Проверка, что сетка не пустая
 	var grid_empty = true
 	for y in range(grid_manager.grid_size):
