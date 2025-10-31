@@ -78,7 +78,7 @@ func init_quests():
 	# 6 — Душа города
 	var q6 = Quest.new()
 	q6.quest_type = "soul_of_city"
-	q6.description = colorize_text("Построй 3 цепочки из 4 районов одного типа (тип разных цепочек может отличаться)")
+	q6.description = colorize_text("Построй 4 цепочки из 3 районов одного типа (тип разных цепочек может отличаться)")
 	q6.reward_cards = 4
 	q6.target_progress = 3
 	quests.append(q6)
@@ -89,7 +89,7 @@ func init_quests():
 	q7.description = colorize_text("Построй зону 2x4 из промышленных районов.")
 	q7.reward_cards = 6
 	q7.target_progress = 1
-	quests.append(q7)
+	#quests.append(q7)
 
 	# 8 — Экологичная индустрия
 	var q8 = Quest.new()
@@ -110,7 +110,7 @@ func init_quests():
 	# 10 — Диагональный город
 	var q11 = Quest.new()
 	q11.quest_type = "diagonal_city"
-	q11.description = colorize_text("Построй 3 диагональные линии из 4 районов одного типа (тип разных линий может отличаться).")
+	q11.description = colorize_text("Построй 4 диагональные линии из 3 районов одного типа (тип разных линий может отличаться).")
 	q11.reward_cards = 6
 	q11.target_progress = 3
 	quests.append(q11)
@@ -166,7 +166,7 @@ func init_quests():
 	# 17 — Природные линии
 	var q18 = Quest.new()
 	q18.quest_type = "natural_lines"
-	q18.description = colorize_text("Должно быть 4 ряда с ровно 4 природными районами.")
+	q18.description = colorize_text("В городе должно быть 4 ряда с ровно 3 природными районами.")
 	q18.reward_cards = 5
 	q18.target_progress = 4
 	quests.append(q18)

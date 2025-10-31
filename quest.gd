@@ -232,7 +232,7 @@ func _calc_soul_of_city(grid, grid_size):
 
 			var cell_type = grid[y][x].type
 			var chain_len = _dfs_chain(grid, x, y, grid_size, visited, cell_type)
-			if chain_len >= 4:
+			if chain_len >= 3:
 				chains += 1
 
 	return chains
@@ -326,14 +326,14 @@ func _calc_diagonal_city(grid, grid_size):
 	var lines := 0
 
 	# ↘ диагонали (вниз-вправо)
-	for y in range(grid_size - 3):
-		for x in range(grid_size - 3):
+	for y in range(grid_size - 2):
+		for x in range(grid_size - 2):
 			var first = grid[y][x]
 			if first == null:
 				continue
 			var type = first.type
 			var valid := true
-			for i in range(4):
+			for i in range(3):
 				var cell = grid[y + i][x + i]
 				if cell == null or not _is_type(cell, type):
 					valid = false
@@ -342,14 +342,14 @@ func _calc_diagonal_city(grid, grid_size):
 				lines += 1
 
 	# ↙ диагонали (вверх-вправо)
-	for y in range(3, grid_size):
-		for x in range(grid_size - 3):
+	for y in range(2, grid_size):
+		for x in range(grid_size - 2):
 			var first = grid[y][x]
 			if first == null:
 				continue
 			var type = first.type
 			var valid := true
-			for i in range(4):
+			for i in range(3):
 				var cell = grid[y - i][x + i]
 				if cell == null or not _is_type(cell, type):
 					valid = false
@@ -506,14 +506,14 @@ func _calc_natural_lines(grid, grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "nature"):
 				count += 1
-		if count == 4:
+		if count == 3:
 			progress += 1
 	for x in range(grid_size):
 		var count := 0
 		for y in range(grid_size):
 			if _is_type(grid[y][x], "nature"):
 				count += 1
-		if count == 4:
+		if count == 3:
 			progress += 1
 	return progress
 
