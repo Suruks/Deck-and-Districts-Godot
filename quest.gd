@@ -51,6 +51,10 @@ func calculate_score(grid: Array, grid_size: int) -> int:
 			score = _calc_industrial_control(grid, grid_size)
 		"diverse_block":
 			score = _calc_diverse_block(grid, grid_size)
+		"diverse_neighbors":
+			score = _calc_diverse_neighbors(grid, grid_size)
+		"monoculture":
+			score = _calc_uniform_rows(grid, grid_size)
 		_:
 			score = 0
 
@@ -364,19 +368,26 @@ func _dfs_isolated_factory_group(grid, x, y, grid_size, visited: Dictionary) -> 
 # --- 12. Соседство искусства ---
 func _calc_art_neighborhood(grid, grid_size):
 	var progress := 0
+	
 	for y in range(grid_size - 1):
 		for x in range(grid_size - 1):
-			var all_residential := true
-			var all_culture := true
+			var first_type = grid[y][x]
+			var is_square := true
+			
+			# Проверяем, что все 4 клетки 2x2 совпадают по типу
 			for dy in range(2):
 				for dx in range(2):
-					if not _is_type(grid[y+dy][x+dx], "residential"):
-						all_residential = false
-					if not _is_type(grid[y+dy][x+dx], "culture"):
-						all_culture = false
-			if all_residential or all_culture:
+					if grid[y + dy][x + dx] != first_type:
+						is_square = false
+						break
+				if not is_square:
+					break
+			
+			if is_square:
 				progress += 1
+	
 	return progress
+
 
 
 # --- 13. Природное равновесие ---
@@ -396,7 +407,7 @@ func _calc_culture_isolation(grid, grid_size):
 	var bonus := 0
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "culture"):
+			if _is_type(grid[y][x], "industrial"):
 				var neighbors := 0
 				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
 					var nx = x + dir[0]
@@ -498,6 +509,38 @@ func _calc_industrial_control(grid, grid_size):
 	return score
 
 
+# --- 19. Город-хамелеон ---
+func _calc_diverse_neighbors(grid, grid_size):
+	var progress := 0
+	
+	for y in range(grid_size):
+		for x in range(grid_size):
+			var neighbors := []
+			
+			# Проверяем 4 направления, если в пределах поля
+			if y > 0:
+				neighbors.append(grid[y - 1][x])
+			if y < grid_size - 1:
+				neighbors.append(grid[y + 1][x])
+			if x > 0:
+				neighbors.append(grid[y][x - 1])
+			if x < grid_size - 1:
+				neighbors.append(grid[y][x + 1])
+			
+			# Убираем совпадения с типом самой клетки
+			neighbors = neighbors.filter(func(t): return t != grid[y][x])
+			
+			# Получаем уникальные типы соседей вручную
+			var unique_types: Array = []
+			for t in neighbors:
+				if not unique_types.has(t):
+					unique_types.append(t)
+			
+			if unique_types.size() == 4:
+				progress += 1
+	
+	return progress
+
 
 func _calc_diverse_block(grid, grid_size):
 	var max_diversity := 0
@@ -523,3 +566,37 @@ func _calc_diverse_block(grid, grid_size):
 					max_diversity = diversity
 	
 	return max_diversity
+	
+	
+# --- Единый стиль ---
+func _calc_uniform_rows(grid, grid_size):
+	var progress := 0
+	
+	# Проверяем горизонтальные ряды
+	for y in range(grid_size):
+		var first_type = grid[y][0]
+		var uniform := true
+		
+		for x in range(1, grid_size):
+			if grid[y][x] != first_type:
+				uniform = false
+				break
+		
+		# Засчитываем, если ряд полностью однородный и длина не меньше 3
+		if uniform and grid_size >= 3:
+			progress += 1
+	
+	# Проверяем вертикальные ряды
+	for x in range(grid_size):
+		var first_type = grid[0][x]
+		var uniform := true
+		
+		for y in range(1, grid_size):
+			if grid[y][x] != first_type:
+				uniform = false
+				break
+		
+		if uniform and grid_size >= 3:
+			progress += 1
+	
+	return progress

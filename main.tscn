@@ -42,7 +42,7 @@ offset_bottom = 35.0
 grow_horizontal = 0
 size_flags_horizontal = 8
 size_flags_vertical = 0
-text = "Score"
+text = "Счёт"
 label_settings = SubResource("LabelSettings_h2yge")
 horizontal_alignment = 2
 

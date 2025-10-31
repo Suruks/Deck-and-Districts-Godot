@@ -54,9 +54,9 @@ func init_quests():
 	# 3 — Комфортные окраины
 	var q3 = Quest.new()
 	q3.quest_type = "cozy_suburbs"
-	q3.description = colorize_text("Построй 6 жилых района на краю поля, которые не касаются промышленных.")
+	q3.description = colorize_text("Построй 7 жилых района на краю поля, которые не касаются промышленных.")
 	q3.reward_cards = 4
-	q3.target_progress = 6
+	q3.target_progress = 7
 	quests.append(q3)
 
 	# 4 — Сердце культуры
@@ -126,9 +126,9 @@ func init_quests():
 	# 12 — Соседство искусства
 	var q13 = Quest.new()
 	q13.quest_type = "art_neighborhood"
-	q13.description = colorize_text("Построй квадрат 2x2 из жилых районов и квадрат 2x2 из культурных.")
+	q13.description = colorize_text("Построй 3 квадрата 2х2 из одного вида районов (виды районов между квадратами могут отличаться)")
 	q13.reward_cards = 5
-	q13.target_progress = 2
+	q13.target_progress = 3
 	quests.append(q13)
 
 	# 13 — Природное равновесие
@@ -142,7 +142,7 @@ func init_quests():
 	# 14 — Культурная уединённость
 	var q15 = Quest.new()
 	q15.quest_type = "culture_isolation"
-	q15.description = colorize_text("Построй 7 культурных районов, соседствующих не больше, чем с двумя другими районами.")
+	q15.description = colorize_text("Построй 7 промышленных районов, соседствующих не больше, чем с двумя другими районами.")
 	q15.reward_cards = 4
 	q15.target_progress = 7
 	quests.append(q15)
@@ -186,7 +186,20 @@ func init_quests():
 	q20.reward_cards = 3
 	q20.target_progress = 1
 	quests.append(q20)
+	
+	var q21 = Quest.new()
+	q21.quest_type = "diverse_neighbors"
+	q21.description = colorize_text("Построй 7 районов, у которых 4 соседа разных типов.")
+	q21.reward_cards = 3
+	q21.target_progress = 7
+	quests.append(q21)
 
+	var q22 = Quest.new()
+	q22.quest_type = "monoculture"
+	q22.description = colorize_text("На карте должно быть 4 ряда, состоящих только из районов одного типа (минимум 3 района)")
+	q22.reward_cards = 5
+	q22.target_progress = 4
+	
 	quests.shuffle()
 
 func draw_quest() -> Quest:
