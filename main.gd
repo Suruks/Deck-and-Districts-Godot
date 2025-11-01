@@ -124,9 +124,10 @@ func update_quest_scores():
 	var current_grid_size = grid_manager.get_grid_size()
 	quest_manager.compute_all_scores(current_grid, current_grid_size)
 
-func _on_quest_completed(reward_count: int):
-	var time = Time.get_datetime_dict_from_system()
-	print(time, ": Квест завершён! Добавляем ", reward_count, " карт(ы) в колоду.")
+func _on_quest_completed(reward_count: int, description: String):
+	var time_dict = Time.get_datetime_dict_from_system()
+	var formatted_time = "%02d:%02d:%02d" % [time_dict.hour, time_dict.minute, time_dict.second]
+	print(formatted_time, ": Квест завершён! Добавляем ", reward_count, " карт(ы) в колоду. Завершенный квест: ", description)
 	
 	var added = card_manager.add_cards(reward_count)
 	var not_added = reward_count - added

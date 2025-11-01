@@ -110,10 +110,9 @@ func complete_quest_by_index(index: int) -> void:
 		active_quests_container.move_child(new_ui, clamp(index, 0, active_quests_container.get_child_count()-1))
 		new_ui.call_deferred("update_ui")
 
-	# Эмитим сигнал. Убедитесь, что reward_cards — это int; если поле другое, скорректируйте.
 	var reward_count: int = q.reward_cards
 
-	call_deferred("emit_signal", "quest_completed", reward_count)
+	call_deferred("emit_signal", "quest_completed", reward_count, q.description)
 
 # Завершение одного квеста
 func complete_quest(q: Quest) -> void:

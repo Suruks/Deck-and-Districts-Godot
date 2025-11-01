@@ -1,6 +1,7 @@
 class_name Quest
 extends Resource
 
+@export var short_desc: String = ""
 @export var description: String = ""
 @export var reward_cards: int = 0
 @export var current_progress: int = 0
@@ -277,7 +278,7 @@ func _calc_eco_industry(grid, grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
 				industrial_count += 1
-				if not _has_neighbor(grid, x, y, grid_size, "culture"):
+				if not _has_neighbor(grid, x, y, grid_size, "industrial"):
 					return 0
 	return 5 if industrial_count >= 5 else 0
 
@@ -390,13 +391,13 @@ func _calc_art_neighborhood(grid, grid_size):
 	
 	for y in range(grid_size - 1):
 		for x in range(grid_size - 1):
-			var first_type = grid[y][x]
+			var first_type = grid[y][x].type
 			var is_square := true
 			
 			# Проверяем, что все 4 клетки 2x2 совпадают по типу
 			for dy in range(2):
 				for dx in range(2):
-					if grid[y + dy][x + dx] != first_type:
+					if grid[y + dy][x + dx].type != first_type:
 						is_square = false
 						break
 				if not is_square:
@@ -406,7 +407,6 @@ func _calc_art_neighborhood(grid, grid_size):
 				progress += 1
 	
 	return progress
-
 
 
 # --- 13. Природное равновесие ---
@@ -441,20 +441,28 @@ func _calc_culture_isolation(grid, grid_size):
 
 # --- 15. Индустриальный ряд ---
 func _calc_industrial_row(grid, grid_size):
-	var max_in_row := 0
+	var count_rows := 0
+	
+	# Горизонтальные ряды
 	for y in range(grid_size):
-		var count := 0
+		var industrial_in_row := 0
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
-				count += 1
-		max_in_row = max(max_in_row, count)
+				industrial_in_row += 1
+		if industrial_in_row >= 4:
+			count_rows += 1
+	
+	# Вертикальные ряды
 	for x in range(grid_size):
-		var count := 0
+		var industrial_in_col := 0
 		for y in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
-				count += 1
-		max_in_row = max(max_in_row, count)
-	return max_in_row
+				industrial_in_col += 1
+		if industrial_in_col >= 4:
+			count_rows += 1
+	
+	return count_rows
+
 
 
 # --- 16. Городская масса ---
@@ -467,7 +475,7 @@ func _calc_urban_mass(grid, grid_size):
 			var cell = grid[y][x]
 			if cell != null and not visited.has(str(x)+","+str(y)):
 				var group_size = _dfs_group(grid, x, y, grid_size, cell.type, visited)
-				if group_size == 5:
+				if group_size >= 5:
 					count += 1
 
 	return count
