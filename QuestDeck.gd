@@ -241,9 +241,9 @@ func init_quests():
 	var q25 = Quest.new()
 	q25.quest_type = "edge_residential_pair"
 	q25.short_desc = "Жильё на краю рядом"
-	q25.description = colorize_text("Построй 8 жилых районов, расположенных на краю поля, соседствующих при этом с другим жилым.")
+	q25.description = colorize_text("Построй 6 жилых районов, расположенных на краю поля, соседствующих при этом с другим жилым.")
 	q25.reward_cards = 3
-	q25.target_progress = 8
+	q25.target_progress = 6
 	quests.append(q25)
 
 	var q26 = Quest.new()

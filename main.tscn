@@ -19,8 +19,13 @@ script = ExtResource("1_ig7tw")
 [node name="HandContainer" type="Node2D" parent="CanvasLayer"]
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_top = 3.0
+offset_bottom = 43.0
+grow_horizontal = 0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
@@ -32,31 +37,21 @@ size_flags_vertical = 0
 theme_override_constants/separation = 12
 
 [node name="Label" type="Label" parent="CanvasLayer"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -78.0
-offset_top = 9.0
-offset_right = -15.0
-offset_bottom = 35.0
-grow_horizontal = 0
+offset_left = 22.0
+offset_top = 14.0
+offset_right = 85.0
+offset_bottom = 40.0
 size_flags_horizontal = 8
 size_flags_vertical = 0
 text = "Счёт"
 label_settings = SubResource("LabelSettings_h2yge")
-horizontal_alignment = 2
 
 [node name="Score" type="Label" parent="CanvasLayer"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -77.0
-offset_top = 34.0
-offset_right = -14.0
-offset_bottom = 60.0
-grow_horizontal = 0
+offset_left = 22.0
+offset_top = 43.0
+offset_right = 85.0
+offset_bottom = 69.0
 size_flags_horizontal = 8
 size_flags_vertical = 0
 text = "0"
 label_settings = SubResource("LabelSettings_0xm2m")
-horizontal_alignment = 2

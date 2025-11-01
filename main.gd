@@ -58,7 +58,7 @@ func _ready():
 	cam.zoom = Vector2(0.66, 0.66)
 	
 	var grid_center_pos = grid_manager.get_center_screen_position()
-	var final_camera_pos = grid_center_pos + Vector2(-250, 20)
+	var final_camera_pos = grid_center_pos + Vector2(194, 20)
 	cam.position = final_camera_pos
 
 	# Колода
