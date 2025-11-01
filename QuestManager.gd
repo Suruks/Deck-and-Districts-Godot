@@ -29,7 +29,7 @@ func setup_quests(count := 3):
 		var q = quest_deck.draw_quest()
 		if q == null:
 			break
-		q.reward_cards *= 0.75
+		
 		active_quests.append(q)
 
 		var ui = quest_ui_scene_ref.instantiate()
@@ -40,17 +40,21 @@ func setup_quests(count := 3):
 # Расчёт очков и завершение квестов
 func compute_all_scores(grid: Array, grid_size: int) -> int:
 	var total_score := 0
-	var quests_to_complete: Array = []
+	var completed_indices: Array = []
 
-	for q in active_quests:
+	# Собираем индексы выполненных квестов (фиксируем индексы на момент проверки)
+	for i in range(active_quests.size()):
+		var q: Quest = active_quests[i]
 		var score = q.calculate_score(grid, grid_size)
 		total_score += score
 		if q.is_completed():
-			quests_to_complete.append(q)
+			completed_indices.append(i)
 
-	# Завершаем квесты
-	for q in quests_to_complete:
-		complete_quest(q)
+	# Завершаем квесты в порядке убывания индекса — это предотвращает сдвиги индексов
+	completed_indices.sort()
+	completed_indices.reverse() # теперь в порядке убывания
+	for idx in completed_indices:
+		complete_quest_by_index(idx)
 
 	# Обновляем UI оставшихся квестов
 	if is_instance_valid(active_quests_container):
@@ -59,33 +63,61 @@ func compute_all_scores(grid: Array, grid_size: int) -> int:
 				child.update_ui()
 
 	return total_score
+	
+func complete_quest_by_index(index: int) -> void:
+	if index < 0 or index >= active_quests.size():
+		return
 
-# Завершение одного квеста
-func complete_quest(q: Quest):
-	var index = active_quests.find(q)
-	if index == -1:
-		return # квест не активен
+	var q: Quest = active_quests[index]
 
 	# Удаляем квест из массива
 	active_quests.remove_at(index)
 
-	# Удаляем UI-ноду по индексу
+	# Находим соответствующий UI-узел привязанный к этому квесту (без предположений о порядке)
 	var ui_node: Node = null
-	if is_instance_valid(active_quests_container) and active_quests_container.get_child_count() > index:
-		ui_node = active_quests_container.get_child(index)
-		if is_instance_valid(ui_node):
-			ui_node.queue_free()
+	if is_instance_valid(active_quests_container):
+		for child in active_quests_container.get_children():
+			# предполагаем, что UI-узел хранит ссылку на свой квест в поле 'quest'
+			if child.has_meta("quest") and child.get_meta("quest") == q:
+				ui_node = child
+				break
+			# или альтернативно: если в ui есть свойство quest (как вы раньше делали)
+			if "quest" in child and child.quest == q:
+				ui_node = child
+				break
 
-	# Берём новый квест и создаём UI на том же месте
+	# Если не нашли по привязке — как запасной вариант берём узел по индексу (на случай, если ui и active_quests синхронизованы)
+	if ui_node == null and is_instance_valid(active_quests_container) and active_quests_container.get_child_count() > index:
+		var candidate = active_quests_container.get_child(index)
+		# проверка: если у узла вообще нет привязки, всё равно удаляем
+		ui_node = candidate
+
+	if is_instance_valid(ui_node):
+		ui_node.queue_free()
+
+	# Берём новый квест и создаём UI на том же месте (если есть)
 	var new_q = quest_deck.draw_quest()
 	if new_q:
 		active_quests.insert(index, new_q)
 
 		var new_ui = quest_ui_scene_ref.instantiate()
+		# сохраняем явную привязку, чтобы можно было надёжно искать UI по квесту
+		if new_ui.has_method("set_meta"):
+			new_ui.set_meta("quest", new_q)
 		new_ui.quest = new_q
 		active_quests_container.add_child(new_ui)
-		active_quests_container.move_child(new_ui, index)
+		# Перемещаем на нужную позицию
+		active_quests_container.move_child(new_ui, clamp(index, 0, active_quests_container.get_child_count()-1))
 		new_ui.call_deferred("update_ui")
 
-	# Добавляем карты за квест
-	call_deferred("emit_signal", "quest_completed", q.reward_cards)
+	# Эмитим сигнал. Убедитесь, что reward_cards — это int; если поле другое, скорректируйте.
+	var reward_count: int = q.reward_cards
+
+	call_deferred("emit_signal", "quest_completed", reward_count)
+
+# Завершение одного квеста
+func complete_quest(q: Quest) -> void:
+	var idx = active_quests.find(q)
+	if idx == -1:
+		return
+	complete_quest_by_index(idx)

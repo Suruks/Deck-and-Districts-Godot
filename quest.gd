@@ -167,53 +167,37 @@ func _calc_heart_of_culture(grid, grid_size):
 
 
 # --- 5. Пояс жизни (горизонтальные/вертикальные линии) ---
-func _calc_life_belt(grid, grid_size):
-	var bonus := 0
+func _calc_life_belt(grid: Array, grid_size: int) -> int:
+	var count_lines = func(horizontal: bool) -> int:
+		var b := 0
+		for i in range(grid_size):
+			var count := 0
+			var has_nature := false
+			var has_residential := false
+			var already_counted := false
+			for j in range(grid_size):
+				var cell = grid[i][j] if horizontal else grid[j][i]
+				if _is_type(cell, "nature"):
+					has_nature = true
+					count += 1
+				elif _is_type(cell, "residential"):
+					has_residential = true
+					count += 1
+				else:
+					if count >= 4 and has_nature and has_residential and not already_counted:
+						b += 1
+					count = 0
+					has_nature = false
+					has_residential = false
+					already_counted = false
+					continue
 
-	# горизонтали
-	for y in range(grid_size):
-		var count := 0
-		var has_nature := false
-		var has_residential := false
-		for x in range(grid_size):
-			var cell = grid[y][x]
-			if _is_type(cell, "nature"):
-				has_nature = true
-				count += 1
-			elif _is_type(cell, "residential"):
-				has_residential = true
-				count += 1
-			else:
-				if count >= 4 and has_nature and has_residential:
-					bonus += 1
-				count = 0
-				has_nature = false
-				has_residential = false
-		if count >= 4 and has_nature and has_residential:
-			bonus += 1
+				if count >= 4 and has_nature and has_residential and not already_counted:
+					b += 1
+					already_counted = true
+		return b
 
-	# вертикали
-	for x in range(grid_size):
-		var count := 0
-		var has_nature := false
-		var has_residential := false
-		for y in range(grid_size):
-			var cell = grid[y][x]
-			if _is_type(cell, "nature"):
-				has_nature = true
-				count += 1
-			elif _is_type(cell, "residential"):
-				has_residential = true
-				count += 1
-			else:
-				if count >= 4 and has_nature and has_residential:
-					bonus += 1
-				count = 0
-				has_nature = false
-				has_residential = false
-		if count >= 4 and has_nature and has_residential:
-			bonus += 1
-
+	var bonus: int = count_lines.call(true) + count_lines.call(false)
 	return bonus
 
 
@@ -442,7 +426,7 @@ func _calc_culture_isolation(grid, grid_size):
 	var bonus := 0
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "industrial"):
+			if _is_type(grid[y][x], "nature"):
 				var neighbors := 0
 				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
 					var nx = x + dir[0]
@@ -475,26 +459,38 @@ func _calc_industrial_row(grid, grid_size):
 
 # --- 16. Городская масса ---
 func _calc_urban_mass(grid, grid_size):
-	var visited := {}
-	var max_group := 0
+	var visited := {} # Dictionary для хранения посещённых клеток
+	var count := 0
+
 	for y in range(grid_size):
 		for x in range(grid_size):
 			var cell = grid[y][x]
 			if cell != null and not visited.has(str(x)+","+str(y)):
-				var group_size = _dfs_group(grid, x, y, grid_size, visited, cell.type)
-				max_group = max(max_group, group_size)
-	return max_group
+				var group_size = _dfs_group(grid, x, y, grid_size, cell.type, visited)
+				if group_size == 5:
+					count += 1
 
-func _dfs_group(grid, x, y, grid_size, visited, t):
+	return count
+
+
+func _dfs_group(grid, x, y, grid_size, t, visited):
+	if x < 0 or y < 0 or x >= grid_size or y >= grid_size:
+		return 0
+
 	var key = str(x)+","+str(y)
-	if x<0 or y<0 or x>=grid_size or y>=grid_size:
+	if visited.has(key):
 		return 0
-	if visited.has(key) or not _is_type(grid[y][x], t):
+
+	var cell = grid[y][x]
+	if cell == null or cell.type != t:
 		return 0
+
 	visited[key] = true
 	var s := 1
+
 	for dir in [[1,0],[-1,0],[0,1],[0,-1]]:
-		s += _dfs_group(grid, x+dir[0], y+dir[1], grid_size, visited, t)
+		s += _dfs_group(grid, x + dir[0], y + dir[1], grid_size, t, visited)
+
 	return s
 
 
@@ -547,33 +543,42 @@ func _calc_industrial_control(grid, grid_size):
 # --- 19. Город-хамелеон ---
 func _calc_diverse_neighbors(grid, grid_size):
 	var progress := 0
-	
+
 	for y in range(grid_size):
 		for x in range(grid_size):
-			var neighbors := []
-			
-			# Проверяем 4 направления, если в пределах поля
+			var block = grid[y][x]
+			if block == null:
+				continue
+
+			var neighbors: Array = []
+
 			if y > 0:
-				neighbors.append(grid[y - 1][x])
+				var top = grid[y - 1][x]
+				if top != null:
+					neighbors.append(top.type)
 			if y < grid_size - 1:
-				neighbors.append(grid[y + 1][x])
+				var bottom = grid[y + 1][x]
+				if bottom != null:
+					neighbors.append(bottom.type)
 			if x > 0:
-				neighbors.append(grid[y][x - 1])
+				var left = grid[y][x - 1]
+				if left != null:
+					neighbors.append(left.type)
 			if x < grid_size - 1:
-				neighbors.append(grid[y][x + 1])
-			
-			# Убираем совпадения с типом самой клетки
-			neighbors = neighbors.filter(func(t): return t != grid[y][x])
-			
-			# Получаем уникальные типы соседей вручную
+				var right = grid[y][x + 1]
+				if right != null:
+					neighbors.append(right.type)
+
+			# Убираем дубликаты вручную
 			var unique_types: Array = []
 			for t in neighbors:
 				if not unique_types.has(t):
 					unique_types.append(t)
-			
-			if unique_types.size() == 4:
+
+			# Проверяем, что все 4 соседа существуют и разных типов
+			if neighbors.size() == 4 and unique_types.size() == 4:
 				progress += 1
-	
+
 	return progress
 
 
@@ -796,7 +801,7 @@ func _calc_culture_no_industry(grid, grid_size):
 
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "culture"):
+			if _is_type(grid[y][x], "living"):
 				var has_industrial_neighbor := false
 				
 				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:

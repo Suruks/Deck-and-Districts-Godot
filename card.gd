@@ -42,6 +42,7 @@ var card_shapes = [
 
 	# --- симметричные формы ---
 	[Vector2(0,0), Vector2(1,0), Vector2(2,0)],                     # XXX
+	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(1,1)],  
 	[Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(3,0)],       # XXXX
 	[Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1)]        # XX\nXX
 ]
@@ -53,6 +54,7 @@ var card_weights = [
 	0.5,  # зеркальная XX\nXX
 	0.5,  # зеркальная XXX\nX
 	1.0,  # XXX
+	1.0,
 	1.0,  # XXXX
 	1.0   # квадрат
 ]

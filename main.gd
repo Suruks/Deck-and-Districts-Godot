@@ -125,7 +125,9 @@ func update_quest_scores():
 	quest_manager.compute_all_scores(current_grid, current_grid_size)
 
 func _on_quest_completed(reward_count: int):
-	print("Квест завершён! Добавляем", reward_count, "карт(ы) в колоду.")
+	var time = Time.get_datetime_dict_from_system()
+	print(time, ": Квест завершён! Добавляем ", reward_count, " карт(ы) в колоду.")
+	
 	var added = card_manager.add_cards(reward_count)
 	var not_added = reward_count - added
 	deck_label.text = str(card_manager.get_deck_size())
