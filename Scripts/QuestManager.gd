@@ -1,7 +1,7 @@
 class_name QuestManager
 extends Node
 
-signal quest_completed(reward_count: int)
+signal quest_completed(reward_count: int, quest: Quest)
 
 @export var active_quests_container: VBoxContainer
 var quest_deck: QuestDeck
@@ -9,16 +9,21 @@ var active_quests: Array = []
 var quest_ui_scene_ref: PackedScene
 
 func _init(_quest_deck: QuestDeck, _quest_ui_scene: PackedScene):
-	if not is_instance_valid(_quest_deck) or _quest_ui_scene == null:
-		printerr("QuestManager: инициализация не удалась.")
+	if not is_instance_valid(_quest_deck):
+		printerr("QuestManager: QuestDeck невалиден.")
 		return
+		
 	quest_deck = _quest_deck
-	quest_ui_scene_ref = _quest_ui_scene
+	quest_ui_scene_ref = _quest_ui_scene # Если quest_ui_scene = null, то setup_quests сработает как "защитник"
 
 # Настройка квестов
-func setup_quests(count := 3):
-	if quest_ui_scene_ref == null or not is_instance_valid(active_quests_container):
-		printerr("QuestManager: невозможно настроить квесты.")
+func setup_quests(count := 3, current_turn: int = 1):
+	if quest_ui_scene_ref == null:
+		printerr("QuestManager: Не загружена QuestUI.tscn.")
+		return
+		
+	if not is_instance_valid(active_quests_container):
+		printerr("QuestManager: active_quests_container невалиден (узел сцены не найден).")
 		return
 
 	active_quests.clear()
@@ -29,11 +34,13 @@ func setup_quests(count := 3):
 		var q = quest_deck.draw_quest()
 		if q == null:
 			break
-		
+			
+		q.start_turn = current_turn
 		active_quests.append(q)
 
 		var ui = quest_ui_scene_ref.instantiate()
 		ui.quest = q  # здесь хранится Resource
+		
 		active_quests_container.add_child(ui)
 		ui.call_deferred("update_ui")
 
@@ -97,9 +104,10 @@ func complete_quest_by_index(index: int) -> void:
 
 	# Берём новый квест и создаём UI на том же месте (если есть)
 	var new_q = quest_deck.draw_quest()
+	MyLogger.log("Квест получен: " + new_q.short_desc)
 	if new_q:
 		active_quests.insert(index, new_q)
-
+	
 		var new_ui = quest_ui_scene_ref.instantiate()
 		# сохраняем явную привязку, чтобы можно было надёжно искать UI по квесту
 		if new_ui.has_method("set_meta"):
@@ -112,7 +120,7 @@ func complete_quest_by_index(index: int) -> void:
 
 	var reward_count: int = q.reward_cards
 
-	call_deferred("emit_signal", "quest_completed", reward_count, q.description)
+	quest_completed.emit(reward_count, q)
 
 # Завершение одного квеста
 func complete_quest(q: Quest) -> void:

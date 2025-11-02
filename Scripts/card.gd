@@ -6,14 +6,14 @@ signal card_selected(card)
 @export var blocks: Array = []
 @export var block_types: Array = []
 
-const Globals = preload("res://globals.gd")
+const Globals = preload("res://Scripts/globals.gd")
 
 @onready var background = $Sprite2D
 @onready var area = $Area2D
 @onready var blocks_container = $BlocksContainer # <-- Получаем новый контейнер
 
 var selected = false
-var tile_texture = preload("res://tile.png")
+var tile_texture = preload("res://Resources/tile.png")
 var block_scale := 0.6
 
 func _ready():

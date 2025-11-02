@@ -3,8 +3,8 @@ class_name CityBlock
 
 @export var type: String = "residential"
 @export var aging: int = 0
-@export var tile_texture: Texture2D = preload("res://tile.png")
-@export var old_texture: Texture2D = preload("res://old_tile.png")
+@export var tile_texture: Texture2D = preload("res://Resources/tile.png")
+@export var old_texture: Texture2D = preload("res://Resources/old_tile.png")
 
 static var max_aging = 20
 

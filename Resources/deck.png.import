@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b2og2ej8y67yp"
-path="res://.godot/imported/replace_hand.png-666ec1403e4a008c463726a303b95e79.ctex"
+uid="uid://bp5nnu6p6uawh"
+path="res://.godot/imported/deck.png-b8ec83549653b049f8f8c708ebca2f68.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://replace_hand.png"
-dest_files=["res://.godot/imported/replace_hand.png-666ec1403e4a008c463726a303b95e79.ctex"]
+source_file="res://Resources/deck.png"
+dest_files=["res://.godot/imported/deck.png-b8ec83549653b049f8f8c708ebca2f68.ctex"]
 
 [params]
 

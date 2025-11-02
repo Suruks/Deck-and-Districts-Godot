@@ -8,6 +8,8 @@ extends Resource
 @export var target_progress: int = 1
 @export var quest_type: String = "" # например "city_in_green"
 
+var start_turn: int = 0
+
 func is_completed() -> bool:
 	return current_progress >= target_progress
 

@@ -2,16 +2,20 @@ extends Node2D
 
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 @onready var quest_deck: QuestDeck = QuestDeck.new()
-@onready var score_label: Label = $CanvasLayer/Score
-@onready var turn_label: Label = $CanvasLayer/Turn
+@onready var score_label: Label = $CanvasLayer/ScorePanel/Score
+@onready var turn_label: Label = $CanvasLayer/TurnPanel/Turn
+
+@onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
+@export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
+var active_quests: Array = []
 
 var card_manager: CardManager
 var quest_manager: QuestManager
 
-const InputScriptClass = preload("res://input.gd")
+const InputScriptClass = preload("res://Scripts/input.gd")
 var input_script: InputClass
 
-const GridManagerClass = preload("res://GridManager.gd")
+const GridManagerClass = preload("res://Scripts/GridManager.gd")
 var grid_manager: GridManager
 
 var deck_sprite: Sprite2D
@@ -20,6 +24,8 @@ var replace_hand_sprite: TextureButton
 
 var turn = 1
 var total_score = 0
+
+var stat_saver: StatSaver = StatSaver.new()
 
 # --- READY ---
 func _ready():
@@ -47,13 +53,13 @@ func _ready():
 	grid_manager = GridManagerClass.new()
 	add_child(grid_manager)
 	
-	var tile_texture = preload("res://tile.png")
-	var old_texture = preload("res://old_tile.png")
+	var tile_texture = preload("res://Resources/tile.png")
+	var old_texture = preload("res://Resources/old_tile.png")
 	grid_manager.init_grid(11, 124, 92, tile_texture, old_texture)
 	grid_manager.card_manager = card_manager
 
 	# Камера
-	var cam_scene = preload("res://camera_controller.gd")
+	var cam_scene = preload("res://Scripts/camera_controller.gd")
 	var cam = Camera2D.new()
 	cam.set_script(cam_scene)
 	add_child(cam)
@@ -65,7 +71,7 @@ func _ready():
 
 	# Колода
 	deck_sprite = Sprite2D.new()
-	deck_sprite.texture = preload("res://deck.png")
+	deck_sprite.texture = preload("res://Resources/deck.png")
 	$CanvasLayer.add_child(deck_sprite)
 	deck_sprite.position = Vector2(70, get_viewport_rect().size.y - 180)
 	deck_sprite.scale = Vector2(0.5,0.5)
@@ -73,7 +79,7 @@ func _ready():
 	deck_label = Label.new()
 	deck_label.text = str(card_manager.get_deck_size()) # <--- Теперь обращаемся к CardManager
 	var font_var = FontVariation.new()
-	font_var.base_font = load("res://ARLRDBD.ttf")
+	font_var.base_font = load("res://Resources/ARLRDBD.TTF")
 	deck_label.add_theme_font_override("font", font_var)
 	deck_label.add_theme_font_size_override("font_size", 32)
 	deck_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
@@ -84,7 +90,7 @@ func _ready():
 
 	# Кнопка replace_hand
 	replace_hand_sprite = TextureButton.new()
-	var texture = load("res://replace_hand.png")
+	var texture = load("res://Resources/replace_hand.png")
 	replace_hand_sprite.texture_normal = texture
 	replace_hand_sprite.custom_minimum_size = texture.get_size()
 	replace_hand_sprite.size = texture.get_size() # или set_size(texture.get_size()
@@ -95,20 +101,8 @@ func _ready():
 	replace_hand_sprite.scale = Vector2(0.35,0.35)
 	replace_hand_sprite.connect("gui_input", Callable(self, "_on_replace_hand_input"))
 	replace_hand_sprite.connect("mouse_exited", Callable(self, "_on_hover_exit"))
-
-	# Квесты
-	quest_deck.init_quests()
-	quest_manager = QuestManager.new(quest_deck, quest_ui_scene)
-	add_child(quest_manager) # Добавьте в дерево, если он у вас не был добавлен
 	
-	quest_manager.active_quests_container = active_quests_container
-	# Теперь менеджер может создавать UI без ошибок
-	quest_manager.setup_quests()
-	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))
-
-@onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
-@export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
-var active_quests: Array = []
+	init_quest_system()
 
 # --- Квесты ---
 func create_quest_ui(quest: Quest) -> Control:
@@ -126,10 +120,12 @@ func update_quest_scores():
 	var current_grid_size = grid_manager.get_grid_size()
 	quest_manager.compute_all_scores(current_grid, current_grid_size)
 
-func _on_quest_completed(reward_count: int, description: String):
-	var time_dict = Time.get_datetime_dict_from_system()
-	var formatted_time = "%02d:%02d:%02d" % [time_dict.hour, time_dict.minute, time_dict.second]
-	print(formatted_time, ": Квест завершён! Добавляем ", reward_count, " карт(ы) в колоду. Завершенный квест: ", description)
+func _on_quest_completed(reward_count: int, quest: Quest):
+	var duration = turn - quest.start_turn
+	stat_saver.append_quest_data(quest.quest_type, duration)
+	
+	MyLogger.log("Квест '" + quest.short_desc + "' (" + quest.quest_type + ") пройден за " + str(duration) + " ходов. Данные сохранены.")
+	MyLogger.log("Добавляем " + str(reward_count) + " карт(ы) в колоду.")
 	
 	var added = card_manager.add_cards(reward_count)
 	var not_added = reward_count - added
@@ -186,6 +182,7 @@ func _on_placement_attempted():
 	# 6. Обновление UI/Квестов
 	turn += 1
 	turn_label.text = str(turn)
+	MyLogger.log("Начался ход " + str(turn) + "!")
 	_update_deck_ui() # Обновляем счетчик
 	grid_manager.clear_preview()
 	# card_placed.emit() # Если такой сигнал нужен для квестов, излучаем его здесь!
@@ -298,3 +295,17 @@ func _input(event):
 		# Main.gd спрашивает CardManager, выбрана ли карта
 		if card_manager.get_selected_card() != null:
 			grid_manager.update_preview() # Вызываем локальный метод main.gd
+			
+func init_quest_system():
+	# 1. Инициализация QuestDeck и создание экземпляра QuestManager
+	quest_deck.init_quests()
+	quest_manager = QuestManager.new(quest_deck, quest_ui_scene)
+	add_child(quest_manager)
+
+	# 2. Установка контейнера (убеждаемся, что @onready переменные готовы)
+	# Этот шаг теперь максимально надежен, так как вызывается после _ready()
+	quest_manager.active_quests_container = active_quests_container
+	
+	# 3. Настройка и подключение сигналов
+	quest_manager.setup_quests(3, turn)
+	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))

@@ -3,12 +3,12 @@
 importer="font_data_dynamic"
 type="FontFile"
 uid="uid://cewls1n52e7qf"
-path="res://.godot/imported/ARLRDBD.TTF-1fd8496ec63998b16b1bbd9c38a93a69.fontdata"
+path="res://.godot/imported/ARLRDBD.TTF-d378274d7914c8834dc6d39753e7cb75.fontdata"
 
 [deps]
 
-source_file="res://ARLRDBD.TTF"
-dest_files=["res://.godot/imported/ARLRDBD.TTF-1fd8496ec63998b16b1bbd9c38a93a69.fontdata"]
+source_file="res://Resources/ARLRDBD.TTF"
+dest_files=["res://.godot/imported/ARLRDBD.TTF-d378274d7914c8834dc6d39753e7cb75.fontdata"]
 
 [params]
 
