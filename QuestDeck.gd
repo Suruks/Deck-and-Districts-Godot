@@ -47,7 +47,7 @@ func init_quests():
 	# 2 — Баланс индустрии
 	var q2 = Quest.new()
 	q2.quest_type = "industrial_balance"
-	q2.short_desc = "Заводы вместе и рядом с природой"
+	q2.short_desc = "Заводы вместе и рядом с культурой"
 	q2.description = colorize_text("+1 прогресс за каждый промышленный район, соседствующий с другим промышленным и культурным районом.\n−2 прогресса за промышленный квартал, не соседствующий ни с промышленным, ни с культурным.")
 	q2.reward_cards = 4
 	q2.target_progress = 5
@@ -208,10 +208,10 @@ func init_quests():
 	
 	var q21 = Quest.new()
 	q21.quest_type = "diverse_neighbors"
-	q21.short_desc = "4 района с разными соседями"
-	q21.description = colorize_text("Построй 4 района, у которых 4 соседа разных типов.")
+	q21.short_desc = "районы с разными соседями"
+	q21.description = colorize_text("Построй 3 района, у которых 4 соседа разных типов.")
 	q21.reward_cards = 5
-	q21.target_progress = 4
+	q21.target_progress = 3
 	quests.append(q21)
 
 	var q22 = Quest.new()
@@ -233,7 +233,7 @@ func init_quests():
 	var q24 = Quest.new()
 	q24.quest_type = "residential_isolation"
 	q24.short_desc = "Жильё без заводов рядом"
-	q24.description = colorize_text("Построй 4 жилых района, у которых нет промышленного района в радиусе 2-х клеток")
+	q24.description = colorize_text("Построй 4 жилых района, у которых нет промышленных районов по соседству или диагонали")
 	q24.reward_cards = 3
 	q24.target_progress = 4
 	quests.append(q24)

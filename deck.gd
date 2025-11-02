@@ -3,9 +3,9 @@ class_name Deck
 
 var cards = []
 
-const max_cards = 40
+const max_cards = 30
 
-func init_deck(count: int = 12):
+func init_deck(count: int):
 	cards.clear()
 	for i in range(count):
 		cards.append(Card.generate_data("random"))

@@ -388,24 +388,28 @@ func _dfs_isolated_factory_group(grid, x, y, grid_size, visited: Dictionary) -> 
 # --- 12. Соседство искусства ---
 func _calc_art_neighborhood(grid, grid_size):
 	var progress := 0
-	
+
 	for y in range(grid_size - 1):
 		for x in range(grid_size - 1):
-			var first_type = grid[y][x].type
+			var first_cell = grid[y][x]
+			if first_cell == null:
+				continue
+			var first_type = first_cell.type
 			var is_square := true
-			
-			# Проверяем, что все 4 клетки 2x2 совпадают по типу
+
+			# Проверяем, что все 4 клетки 2x2 существуют и совпадают по типу
 			for dy in range(2):
 				for dx in range(2):
-					if grid[y + dy][x + dx].type != first_type:
+					var cell = grid[y + dy][x + dx]
+					if cell == null or cell.type != first_type:
 						is_square = false
 						break
 				if not is_square:
 					break
-			
+
 			if is_square:
 				progress += 1
-	
+
 	return progress
 
 
@@ -591,8 +595,6 @@ func _calc_diverse_neighbors(grid, grid_size):
 
 
 func _calc_diverse_block(grid, grid_size):
-	var max_diversity := 0
-	
 	for y in range(grid_size - 2):
 		for x in range(grid_size - 2):
 			var types := {}
@@ -604,16 +606,19 @@ func _calc_diverse_block(grid, grid_size):
 					if cell == null:
 						valid = false
 						break
-					types[cell.type] = true
+					var t = cell.type
+					if t in types:
+						valid = false
+						break
+					types[t] = true
 				if not valid:
 					break
 			
-			if valid:
-				var diversity = types.keys().size()
-				if diversity > max_diversity:
-					max_diversity = diversity
+			if valid and types.size() == 9:
+				return 1
 	
-	return max_diversity
+	return 0
+
 	
 	
 # --- Единый стиль ---
@@ -678,8 +683,8 @@ func _calc_residential_isolation(grid, grid_size):
 				var is_isolated := true
 				
 				# Проверка в радиусе 2-х клеток (включая саму клетку, но она не industrial)
-				for dy in range(-2, 3):
-					for dx in range(-2, 3):
+				for dy in range(-1, 2):
+					for dx in range(-1, 2):
 						var nx = x + dx
 						var ny = y + dy
 						

@@ -3,6 +3,7 @@ extends Node2D
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 @onready var quest_deck: QuestDeck = QuestDeck.new()
 @onready var score_label: Label = $CanvasLayer/Score
+@onready var turn_label: Label = $CanvasLayer/Turn
 
 var card_manager: CardManager
 var quest_manager: QuestManager
@@ -17,6 +18,7 @@ var deck_sprite: Sprite2D
 var deck_label: Label
 var replace_hand_sprite: TextureButton
 
+var turn = 1
 var total_score = 0
 
 # --- READY ---
@@ -29,7 +31,7 @@ func _ready():
 
 	card_manager = CardManager.new()
 	add_child(card_manager) # Теперь Godot управляет его жизненным циклом!
-	card_manager.init_deck(23)
+	card_manager.init_deck(18)
 	
 	card_manager.setup_hand($CanvasLayer)
 	hand_script = card_manager.hand
@@ -182,6 +184,8 @@ func _on_placement_attempted():
 	card_manager.complete_placement_transaction()
 	
 	# 6. Обновление UI/Квестов
+	turn += 1
+	turn_label.text = str(turn)
 	_update_deck_ui() # Обновляем счетчик
 	grid_manager.clear_preview()
 	# card_placed.emit() # Если такой сигнал нужен для квестов, излучаем его здесь!

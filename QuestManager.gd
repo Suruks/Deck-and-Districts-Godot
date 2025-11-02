@@ -16,7 +16,7 @@ func _init(_quest_deck: QuestDeck, _quest_ui_scene: PackedScene):
 	quest_ui_scene_ref = _quest_ui_scene
 
 # Настройка квестов
-func setup_quests(count := 5):
+func setup_quests(count := 3):
 	if quest_ui_scene_ref == null or not is_instance_valid(active_quests_container):
 		printerr("QuestManager: невозможно настроить квесты.")
 		return
