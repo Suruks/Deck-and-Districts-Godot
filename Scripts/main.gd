@@ -4,9 +4,12 @@ extends Node2D
 @onready var quest_deck: QuestDeck = QuestDeck.new()
 @onready var score_label: Label = $CanvasLayer/ScorePanel/Score
 @onready var turn_label: Label = $CanvasLayer/TurnPanel/Turn
+@onready var deck_count_label: RichTextLabel = $CanvasLayer/DeckSprite/DeckCount
+@onready var deck_max_label: RichTextLabel = $CanvasLayer/DeckSprite/DeckMax
 
 @onready var active_quests_container: VBoxContainer = $CanvasLayer/MarginContainer/ActiveQuests
 @export var quest_ui_scene: PackedScene = preload("res://QuestUI.tscn")
+
 var active_quests: Array = []
 
 var card_manager: CardManager
@@ -18,8 +21,6 @@ var input_script: InputClass
 const GridManagerClass = preload("res://Scripts/GridManager.gd")
 var grid_manager: GridManager
 
-var deck_sprite: Sprite2D
-var deck_label: Label
 var replace_hand_sprite: TextureButton
 
 var turn = 1
@@ -70,23 +71,7 @@ func _ready():
 	cam.position = final_camera_pos
 
 	# Колода
-	deck_sprite = Sprite2D.new()
-	deck_sprite.texture = preload("res://Resources/deck.png")
-	$CanvasLayer.add_child(deck_sprite)
-	deck_sprite.position = Vector2(70, get_viewport_rect().size.y - 180)
-	deck_sprite.scale = Vector2(0.5,0.5)
-	
-	deck_label = Label.new()
-	deck_label.text = str(card_manager.get_deck_size()) # <--- Теперь обращаемся к CardManager
-	var font_var = FontVariation.new()
-	font_var.base_font = load("res://Resources/ARLRDBD.TTF")
-	deck_label.add_theme_font_override("font", font_var)
-	deck_label.add_theme_font_size_override("font_size", 32)
-	deck_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-	deck_label.vertical_alignment = VerticalAlignment.VERTICAL_ALIGNMENT_CENTER
-	$CanvasLayer.add_child(deck_label)
-	deck_label.position = Vector2(50,get_viewport_rect().size.y-195)
-	deck_label.modulate = Color(0,0,0,1)
+	_update_deck_ui()
 
 	# Кнопка replace_hand
 	replace_hand_sprite = TextureButton.new()
@@ -129,13 +114,14 @@ func _on_quest_completed(reward_count: int, quest: Quest):
 	
 	var added = card_manager.add_cards(reward_count)
 	var not_added = reward_count - added
-	deck_label.text = str(card_manager.get_deck_size())
 	
 	# очки: добавленные х10, не добавленные из-за лимита х20
 	total_score += added * 10 + not_added * 20
 	score_label.text = str(total_score)
 	
 	quest_manager.compute_all_scores(grid_manager.get_grid(), grid_manager.get_grid_size(), turn)
+	
+	_update_deck_ui()
 
 
 # --- Генерация руки ---
@@ -190,7 +176,8 @@ func _on_placement_attempted():
 
 
 func _update_deck_ui():
-	deck_label.text = str(card_manager.get_deck_size())
+	deck_count_label.text = str(card_manager.get_deck_size())
+	deck_max_label.text = "(" + str(card_manager.get_deck_max_size()) + ")"
 	
 # --- Replace hand ---
 func _on_replace_hand_input(event: InputEvent) -> void:
@@ -286,8 +273,7 @@ func _replace_hand():
 		var new_card = card_manager.draw_card()
 		if new_card:
 			hand_script.add_card(new_card)
-			
-	deck_label.text = str(card_manager.get_deck_size())
+
 
 func _input(event):
 	# Проверяем, что событие — это движение мыши

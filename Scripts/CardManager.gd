@@ -94,6 +94,9 @@ func draw_card():
 	
 func get_deck_size() -> int:
 	return deck.cards.size()
+	
+func get_deck_max_size() -> int:
+	return deck.max_cards
 
 func get_selected_card() -> Card:
 	# CardManager — единственный источник истины для этой переменной
