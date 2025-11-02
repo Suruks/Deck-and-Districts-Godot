@@ -6,7 +6,7 @@ func log(message):
 	var formatted_time = "%02d:%02d:%02d" % [time_dict.hour, time_dict.minute, time_dict.second]
 	
 	# Мы используем print, но добавляем префикс для удобства фильтрации
-	print("[LOG %s] %s" % [formatted_time, message])
+	print("[%s] %s" % [formatted_time, message])
 	
 	# Если вы хотите записывать логи в файл, добавьте здесь логику сохранения
 	# Example:

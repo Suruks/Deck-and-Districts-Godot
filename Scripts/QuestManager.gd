@@ -45,7 +45,7 @@ func setup_quests(count := 3, current_turn: int = 1):
 		ui.call_deferred("update_ui")
 
 # Расчёт очков и завершение квестов
-func compute_all_scores(grid: Array, grid_size: int) -> int:
+func compute_all_scores(grid: Array, grid_size: int, current_turn: int) -> int:
 	var total_score := 0
 	var completed_indices: Array = []
 
@@ -61,7 +61,7 @@ func compute_all_scores(grid: Array, grid_size: int) -> int:
 	completed_indices.sort()
 	completed_indices.reverse() # теперь в порядке убывания
 	for idx in completed_indices:
-		complete_quest_by_index(idx)
+		complete_quest_by_index(idx, current_turn)
 
 	# Обновляем UI оставшихся квестов
 	if is_instance_valid(active_quests_container):
@@ -71,7 +71,7 @@ func compute_all_scores(grid: Array, grid_size: int) -> int:
 
 	return total_score
 	
-func complete_quest_by_index(index: int) -> void:
+func complete_quest_by_index(index: int, current_turn: int) -> void:
 	if index < 0 or index >= active_quests.size():
 		return
 
@@ -106,6 +106,7 @@ func complete_quest_by_index(index: int) -> void:
 	var new_q = quest_deck.draw_quest()
 	MyLogger.log("Квест получен: " + new_q.short_desc)
 	if new_q:
+		new_q.start_turn = current_turn
 		active_quests.insert(index, new_q)
 	
 		var new_ui = quest_ui_scene_ref.instantiate()
@@ -119,12 +120,11 @@ func complete_quest_by_index(index: int) -> void:
 		new_ui.call_deferred("update_ui")
 
 	var reward_count: int = q.reward_cards
-
 	quest_completed.emit(reward_count, q)
 
 # Завершение одного квеста
-func complete_quest(q: Quest) -> void:
+func complete_quest(q: Quest, current_turn: int) -> void:
 	var idx = active_quests.find(q)
 	if idx == -1:
 		return
-	complete_quest_by_index(idx)
+	complete_quest_by_index(idx, current_turn)

@@ -118,7 +118,7 @@ func create_quest_ui(quest: Quest) -> Control:
 func update_quest_scores():
 	var current_grid = grid_manager.get_grid()
 	var current_grid_size = grid_manager.get_grid_size()
-	quest_manager.compute_all_scores(current_grid, current_grid_size)
+	quest_manager.compute_all_scores(current_grid, current_grid_size, turn)
 
 func _on_quest_completed(reward_count: int, quest: Quest):
 	var duration = turn - quest.start_turn
@@ -135,7 +135,7 @@ func _on_quest_completed(reward_count: int, quest: Quest):
 	total_score += added * 10 + not_added * 20
 	score_label.text = str(total_score)
 	
-	quest_manager.compute_all_scores(grid_manager.get_grid(), grid_manager.get_grid_size())
+	quest_manager.compute_all_scores(grid_manager.get_grid(), grid_manager.get_grid_size(), turn)
 
 
 # --- Генерация руки ---

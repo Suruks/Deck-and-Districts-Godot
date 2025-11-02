@@ -20,24 +20,18 @@ func calculate_score(grid: Array, grid_size: int) -> int:
 			score = _calc_city_in_green(grid, grid_size)
 		"industrial_balance":
 			score = _calc_industrial_balance(grid, grid_size)
-		"cozy_suburbs":
-			score = _calc_cozy_suburbs(grid, grid_size)
 		"heart_of_culture":
 			score = _calc_heart_of_culture(grid, grid_size)
 		"life_belt":
 			score = _calc_life_belt(grid, grid_size)
 		"soul_of_city":
 			score = _calc_soul_of_city(grid, grid_size)
-		"industrial_square":
-			score = _calc_industrial_square(grid, grid_size)
 		"eco_industry":
 			score = _calc_eco_industry(grid, grid_size)
 		"eco_homes":
 			score = _calc_eco_homes(grid, grid_size)
 		"diagonal_city":
 			score = _calc_diagonal_city(grid, grid_size)
-		"isolated_factories":
-			score = _calc_isolated_factories(grid, grid_size)
 		"art_neighborhood":
 			score = _calc_art_neighborhood(grid, grid_size)
 		"natural_balance":
@@ -74,8 +68,6 @@ func calculate_score(grid: Array, grid_size: int) -> int:
 			score = _calc_culture_neighboring_nature(grid, grid_size) # q28
 		"culture_neighboring_residential":
 			score = _calc_culture_neighboring_residential(grid, grid_size) # q29
-		"culture_no_industry":
-			score = _calc_culture_no_industry(grid, grid_size) # q30
 		"mixed_rows":
 			score = _calc_mixed_rows(grid, grid_size) # q31
 		"unique_squares":
@@ -129,18 +121,6 @@ func _calc_industrial_balance(grid, grid_size):
 					progress -= 2
 	
 	return progress
-
-
-
-# --- 3. Комфортные окраины ---
-func _calc_cozy_suburbs(grid, grid_size):
-	var bonus := 0
-	for y in range(grid_size):
-		for x in range(grid_size):
-			if _is_type(grid[y][x], "residential") and (x == 0 or y == 0 or x == grid_size-1 or y == grid_size-1):
-				if not _has_neighbor(grid, x, y, grid_size, "industrial"):
-					bonus += 1
-	return bonus
 
 
 # --- 4. Сердце культуры ---
@@ -243,36 +223,6 @@ func _dfs_chain(grid, x, y, grid_size, visited: Dictionary, cell_type: String) -
 	return length
 
 
-
-# --- 7. Зона промышленности 2x4 (горизонтально и вертикально) ---
-func _calc_industrial_square(grid, grid_size):
-	var progress := 0
-
-	# Горизонтальные 2x4 (2 строки × 4 столбца)
-	for y in range(grid_size - 1):
-		for x in range(grid_size - 3):
-			var all_industrial := true
-			for dy in range(2):
-				for dx in range(4):
-					if not _is_type(grid[y+dy][x+dx], "industrial"):
-						all_industrial = false
-			if all_industrial:
-				progress += 1
-
-	# Вертикальные 2x4 (4 строки × 2 столбца)
-	for y in range(grid_size - 3):
-		for x in range(grid_size - 1):
-			var all_industrial := true
-			for dy in range(4):
-				for dx in range(2):
-					if not _is_type(grid[y+dy][x+dx], "industrial"):
-						all_industrial = false
-			if all_industrial:
-				progress += 1
-
-	return progress
-
-
 # --- 8. Экологичная индустрия ---
 func _calc_eco_industry(grid, grid_size):
 	var industrial_count := 0
@@ -347,72 +297,20 @@ func _calc_diagonal_city(grid, grid_size):
 	return lines
 
 
-# --- 11. Изолированные заводы ---
-func _calc_isolated_factories(grid, grid_size):
-	var visited := {}
-	var max_group := 0
+# --- 12. Соседство искусства ---
+func _calc_art_neighborhood(grid, grid_size):
+	var visited := {} # Dictionary для хранения посещённых клеток
+	var count := 0
 
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "industrial") and not _has_neighbor(grid, x, y, grid_size, "residential"):
-				var key = str(x) + "," + str(y)
-				if visited.has(key):
-					continue
-
-				var group_size = _dfs_isolated_factory_group(grid, x, y, grid_size, visited)
-
-				if group_size > max_group:
-					max_group = group_size
-
-	return min(max_group, 6)  # ограничиваем максимумом 6 (цель задания)
-	
-
-func _dfs_isolated_factory_group(grid, x, y, grid_size, visited: Dictionary) -> int:
-	if x < 0 or y < 0 or x >= grid_size or y >= grid_size:
-		return 0
-	var key = str(x) + "," + str(y)
-	if visited.has(key):
-		return 0
-	if not _is_type(grid[y][x], "industrial"):
-		return 0
-	if _has_neighbor(grid, x, y, grid_size, "residential"):
-		return 0
-
-	visited[key] = true
-	var count := 1
-
-	for dir in [[1,0], [-1,0], [0,1], [0,-1]]:
-		count += _dfs_isolated_factory_group(grid, x + dir[0], y + dir[1], grid_size, visited)
+			var cell = grid[y][x]
+			if cell != null and not visited.has(str(x)+","+str(y)):
+				var group_size = _dfs_group(grid, x, y, grid_size, cell.type, visited)
+				if group_size >= 3:
+					count += 1
 
 	return count
-
-
-# --- 12. Соседство искусства ---
-func _calc_art_neighborhood(grid, grid_size):
-	var progress := 0
-
-	for y in range(grid_size - 1):
-		for x in range(grid_size - 1):
-			var first_cell = grid[y][x]
-			if first_cell == null:
-				continue
-			var first_type = first_cell.type
-			var is_square := true
-
-			# Проверяем, что все 4 клетки 2x2 существуют и совпадают по типу
-			for dy in range(2):
-				for dx in range(2):
-					var cell = grid[y + dy][x + dx]
-					if cell == null or cell.type != first_type:
-						is_square = false
-						break
-				if not is_square:
-					break
-
-			if is_square:
-				progress += 1
-
-	return progress
 
 
 # --- 13. Природное равновесие ---
@@ -599,9 +497,8 @@ func _calc_diverse_neighbors(grid, grid_size):
 func _calc_diverse_block(grid, grid_size):
 	for y in range(grid_size - 2):
 		for x in range(grid_size - 2):
-			var types := {}
 			var valid := true
-			
+
 			for dy in range(3):
 				for dx in range(3):
 					var cell = grid[y + dy][x + dx]
@@ -609,17 +506,30 @@ func _calc_diverse_block(grid, grid_size):
 						valid = false
 						break
 					var t = cell.type
-					if t in types:
-						valid = false
-						break
-					types[t] = true
+
+					# проверяем только правого и нижнего соседа
+					var right = Vector2(dx + 1, dy)
+					var down = Vector2(dx, dy + 1)
+
+					if right.x < 3:
+						var neighbor = grid[y + right.y][x + right.x]
+						if neighbor != null and neighbor.type == t:
+							valid = false
+							break
+					if down.y < 3:
+						var neighbor = grid[y + down.y][x + down.x]
+						if neighbor != null and neighbor.type == t:
+							valid = false
+							break
+
 				if not valid:
 					break
-			
-			if valid and types.size() == 9:
+
+			if valid:
 				return 1
-	
+
 	return 0
+
 
 	
 	
@@ -807,27 +717,6 @@ func _calc_culture_neighboring_residential(grid, grid_size):
 							residential_neighbors += 1
 							
 				if residential_neighbors >= 2:
-					count += 1
-					
-	return count
-	
-func _calc_culture_no_industry(grid, grid_size):
-	var count := 0
-
-	for y in range(grid_size):
-		for x in range(grid_size):
-			if _is_type(grid[y][x], "living"):
-				var has_industrial_neighbor := false
-				
-				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
-					var nx = x + dir[0]
-					var ny = y + dir[1]
-					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
-						if _is_type(grid[ny][nx], "industrial"):
-							has_industrial_neighbor = true
-							break
-							
-				if not has_industrial_neighbor:
 					count += 1
 					
 	return count
