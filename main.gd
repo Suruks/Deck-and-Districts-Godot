@@ -55,10 +55,10 @@ func _ready():
 	var cam = Camera2D.new()
 	cam.set_script(cam_scene)
 	add_child(cam)
-	cam.zoom = Vector2(0.66, 0.66)
+	cam.zoom = Vector2(0.6, 0.6)
 	
 	var grid_center_pos = grid_manager.get_center_screen_position()
-	var final_camera_pos = grid_center_pos + Vector2(194, 20)
+	var final_camera_pos = grid_center_pos + Vector2(240, 20)
 	cam.position = final_camera_pos
 
 	# Колода
