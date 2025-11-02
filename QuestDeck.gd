@@ -41,7 +41,7 @@ func init_quests():
 	q1.short_desc = "Дома рядом с природой"
 	q1.description = colorize_text("+1 прогресс за каждый жилой район, соседствующий с природным. \n−1 прогресс за жилой район без природного рядом.")
 	q1.reward_cards = 3
-	q1.target_progress = 5
+	q1.target_progress = 6
 	quests.append(q1)
 
 	# 2 — Баланс индустрии
@@ -50,16 +50,16 @@ func init_quests():
 	q2.short_desc = "Заводы вместе и рядом с природой"
 	q2.description = colorize_text("+1 прогресс за каждый промышленный район, соседствующий с другим промышленным и культурным районом.\n−2 прогресса за промышленный квартал, не соседствующий ни с промышленным, ни с культурным.")
 	q2.reward_cards = 4
-	q2.target_progress = 6
+	q2.target_progress = 5
 	quests.append(q2)
 
 	# 3 — Комфортные окраины
 	var q3 = Quest.new()
 	q3.quest_type = "cozy_suburbs"
 	q3.short_desc = "Дома на краю без заводов"
-	q3.description = colorize_text("Построй 7 жилых района на краю поля, которые не касаются промышленных.")
-	q3.reward_cards = 4
-	q3.target_progress = 7
+	q3.description = colorize_text("Построй 6 жилых районов на краю поля, которые не касаются промышленных.")
+	q3.reward_cards = 3
+	q3.target_progress = 6
 	#quests.append(q3)
 
 	# 4 — Сердце культуры
@@ -103,7 +103,7 @@ func init_quests():
 	q8.quest_type = "eco_industry"
 	q8.short_desc = "Промышленные рядом"
 	q8.description = colorize_text("Каждый промышленный район должен соседствовать с другим промышленным. В игре должно быть минимум 6 промышленных районов.")
-	q8.reward_cards = 3
+	q8.reward_cards = 4
 	q8.target_progress = 6
 	quests.append(q8)
 
@@ -112,7 +112,7 @@ func init_quests():
 	q10.quest_type = "eco_homes"
 	q10.short_desc = "Жильё рядом с природой"
 	q10.description = colorize_text("Построй 3 жилых района, соседствующих минимум с 3 природными.")
-	q10.reward_cards = 5
+	q10.reward_cards = 4
 	q10.target_progress = 3
 	quests.append(q10)
 
@@ -121,7 +121,7 @@ func init_quests():
 	q11.quest_type = "diagonal_city"
 	q11.short_desc = "Диагональные линии"
 	q11.description = colorize_text("Построй 3 диагональные линии из 3 районов одного типа (тип разных линий может отличаться).")
-	q11.reward_cards = 5
+	q11.reward_cards = 4
 	q11.target_progress = 3
 	quests.append(q11)
 
@@ -148,16 +148,16 @@ func init_quests():
 	q14.quest_type = "natural_balance"
 	q14.short_desc = "+1 за природу, -1 за заводы"
 	q14.description = colorize_text("+1 прогресс за каждый природный район. -1 прогресса за каждый промышленный.")
-	q14.reward_cards = 4
+	q14.reward_cards = 3
 	q14.target_progress = 6
 	quests.append(q14)
 
 	# 14 — Культурная уединённость
 	var q15 = Quest.new()
 	q15.quest_type = "culture_isolation"
-	q15.short_desc = "Природные изолированы"
+	q15.short_desc = "Природные на углах"
 	q15.description = colorize_text("Построй 6 природных районов, соседствующих не больше, чем с двумя другими районами.")
-	q15.reward_cards = 4
+	q15.reward_cards = 3
 	q15.target_progress = 6
 	quests.append(q15)
 
@@ -193,7 +193,7 @@ func init_quests():
 	q19.quest_type = "industrial_control"
 	q19.short_desc = "Промышленные окружены"
 	q19.description = colorize_text("+1 прогресс за каждый промышленный район, окружённый другими районами. -2 прогресса за каждый промышленный район, окружённый менее чем с 3 сторон.")
-	q19.reward_cards = 4
+	q19.reward_cards = 3
 	q19.target_progress = 5
 	quests.append(q19)
 
@@ -202,7 +202,7 @@ func init_quests():
 	q20.quest_type = "diverse_block"
 	q20.short_desc = "Разные типы 3x3"
 	q20.description = colorize_text("Построй область 3x3, где каждый район отличается по типу от всех соседей.")
-	q20.reward_cards = 4
+	q20.reward_cards = 3
 	q20.target_progress = 1
 	quests.append(q20)
 	
@@ -210,7 +210,7 @@ func init_quests():
 	q21.quest_type = "diverse_neighbors"
 	q21.short_desc = "4 района с разными соседями"
 	q21.description = colorize_text("Построй 4 района, у которых 4 соседа разных типов.")
-	q21.reward_cards = 4
+	q21.reward_cards = 5
 	q21.target_progress = 4
 	quests.append(q21)
 
@@ -226,16 +226,16 @@ func init_quests():
 	q23.quest_type = "neighboring_nature"
 	q23.short_desc = "Жильё рядом с природой"
 	q23.description = colorize_text("Построй 6 жилых районов, соседствующих с 2+ природными районами.")
-	q23.reward_cards = 4
+	q23.reward_cards = 5
 	q23.target_progress = 6
 	quests.append(q23)
 
 	var q24 = Quest.new()
 	q24.quest_type = "residential_isolation"
 	q24.short_desc = "Жильё без заводов рядом"
-	q24.description = colorize_text("Построй 5 жилых районов, у которых нет промышленного района в радиусе 2-х клеток")
-	q24.reward_cards = 4
-	q24.target_progress = 5
+	q24.description = colorize_text("Построй 4 жилых района, у которых нет промышленного района в радиусе 2-х клеток")
+	q24.reward_cards = 3
+	q24.target_progress = 4
 	quests.append(q24)
 
 	var q25 = Quest.new()
@@ -284,7 +284,7 @@ func init_quests():
 	q30.description = colorize_text("Построй 8 жилых районов без промышленных соседей")
 	q30.reward_cards = 5
 	q30.target_progress = 8
-	quests.append(q30)
+	#quests.append(q30)
 
 	var q31 = Quest.new()
 	q31.quest_type = "mixed_rows"
@@ -298,7 +298,7 @@ func init_quests():
 	q32.quest_type = "unique_squares"
 	q32.short_desc = "Квадраты уникальных районов"
 	q32.description = colorize_text("Построй 4 квадрата 2x2, где каждый из 4-х районов уникален.")
-	q32.reward_cards = 4
+	q32.reward_cards = 3
 	q32.target_progress = 5
 	quests.append(q32)
 	
@@ -308,5 +308,5 @@ func draw_quest() -> Quest:
 	if quests.is_empty():
 		return null
 	var q = quests.pop_front()
-	q.reward_cards *= 0.75   # ВРЕМЕННОЕ УВЕЛИЧЕНИЕ СЛОЖНОСТИ
+	#q.reward_cards *= 0.75   # ВРЕМЕННОЕ УВЕЛИЧЕНИЕ СЛОЖНОСТИ
 	return q
