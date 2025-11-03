@@ -24,7 +24,8 @@ var grid_manager: GridManager
 
 var replace_hand_sprite: TextureButton
 
-var epoch = 4
+var epoch = 3
+var turns_in_epoch = 30
 var turn = 1
 var total_score = 0
 
@@ -92,7 +93,7 @@ func _ready():
 	replace_hand_sprite.connect("gui_input", Callable(self, "_on_replace_hand_input"))
 	replace_hand_sprite.connect("mouse_exited", Callable(self, "_on_hover_exit"))
 	
-	init_quest_system(epoch)
+	init_quest_system()
 
 # --- Квесты ---
 func create_quest_ui(quest: Quest) -> Control:
@@ -148,7 +149,6 @@ func setup_hand():
 	hand_script = hand
 
 
-
 func _on_placement_attempted():
 	# 1. Определение ячейки
 	var cell_coords = grid_manager.get_hovered_cell()
@@ -170,10 +170,16 @@ func _on_placement_attempted():
 	# 5. Выполнение транзакции (обновление руки/колоды)
 	card_manager.complete_placement_transaction()
 	
-	# 6. Обновление UI/Квестов
+	# 6. Смена хода/эпохи
 	turn += 1
 	turn_label.text = str(turn)
-	MyLogger.log("Начался ход " + str(turn) + "!")
+	MyLogger.log("Начался ход " + str(turn))
+	if (turn - 1) % turns_in_epoch == 0:
+		epoch += 1
+		MyLogger.log("Началась эпоха " + str(epoch) + "! Квесты были усложнены")
+		epoch_label.text = str(epoch)
+	
+	# 6. Обновление UI/Квестов
 	_update_deck_ui() # Обновляем счетчик
 	grid_manager.clear_preview()
 	# card_placed.emit() # Если такой сигнал нужен для квестов, излучаем его здесь!
@@ -287,7 +293,7 @@ func _input(event):
 		if card_manager.get_selected_card() != null:
 			grid_manager.update_preview() # Вызываем локальный метод main.gd
 
-func init_quest_system(epoch: int):
+func init_quest_system():
 	# 1. Инициализация QuestDeck и создание экземпляра QuestManager
 	quest_deck.init_quests()
 	quest_manager = QuestManager.new(quest_deck, quest_ui_scene)

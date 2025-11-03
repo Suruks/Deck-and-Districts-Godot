@@ -127,12 +127,10 @@ func _calc_industrial_balance(grid, grid_size):
 			if _is_type(grid[y][x], "industrial"):
 				var has_industrial = _has_neighbor(grid, x, y, grid_size, "industrial")
 				var has_culture = _has_neighbor(grid, x, y, grid_size, "culture")
-				var has_residential = _has_neighbor(grid, x, y, grid_size, "residential")
-				var has_nature = _has_neighbor(grid, x, y, grid_size, "nature")
 				
 				if has_industrial and has_culture:
 					progress += 1
-				elif not has_residential and not has_nature:
+				elif not has_industrial and not has_culture:
 					progress -= 2
 	
 	return progress

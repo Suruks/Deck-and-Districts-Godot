@@ -119,5 +119,5 @@ func complete_quest_by_index(index: int, current_turn: int, epoch: int) -> void:
 		active_quests_container.move_child(new_ui, clamp(index, 0, active_quests_container.get_child_count()-1))
 		new_ui.call_deferred("update_ui")
 
-	var reward_count: int = q.reward_cards
+	var reward_count: int = q.get_reward_cards()
 	quest_completed.emit(reward_count, q)

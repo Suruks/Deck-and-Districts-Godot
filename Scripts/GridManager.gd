@@ -115,7 +115,7 @@ func _execute_placement(selected_card: Card, cell_coords: Vector2):
 		var old_block = grid[bpos.y][bpos.x]
 		if old_block != null and is_instance_valid(old_block):
 			old_block.queue_free()
-			grid[cell_coords.y][cell_coords.x] = null
+			grid[bpos.y][bpos.x] = null
 
 		# ... (логика создания нового блока)
 		var new_block = CityBlock.new()
