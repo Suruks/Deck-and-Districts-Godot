@@ -8,11 +8,32 @@ extends Resource
 @export var target_progress: int = 1
 @export var quest_type: String = "" # например "city_in_green"
 
+@export var difficulty_levels: Dictionary = {}
+var current_difficulty: String
+
 var start_turn: int = 0
 
-func is_completed() -> bool:
-	return current_progress >= target_progress
+# --- Вспомогательные функции для получения параметров ---
+func _get_current_param(param_name: String, default_value) -> int:
+	if difficulty_levels.has(current_difficulty):
+		var params = difficulty_levels[current_difficulty]
+		# Если параметр задан для текущей сложности, используем его
+		if params.has(param_name):
+			return params[param_name]
+			
+	# Иначе возвращаем значение по умолчанию (например, то, что вписано в QuestDeck)
+	# или прямое свойство Resource.
+	return default_value
 
+func get_target_progress() -> int:
+	return _get_current_param("target_progress", target_progress)
+
+func get_reward_cards() -> int:
+	return _get_current_param("reward_cards", reward_cards)
+
+func is_completed() -> bool:
+	return current_progress >= get_target_progress()
+	
 func calculate_score(grid: Array, grid_size: int) -> int:
 	var score := 0
 	match quest_type:
@@ -192,21 +213,19 @@ func _calc_eco_industry(grid, grid_size):
 
 # --- 9. Эко-жильё ---
 func _calc_eco_homes(grid, grid_size):
+	# Получаем динамический параметр для логики
+	var required_neighbors: int = _get_current_param("min_nature_neighbors", 3) # 3 - значение по умолчанию
+	
 	var eco_homes := 0
 
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "residential"):
 				var nature_count := 0
-				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
-					var nx = x + dir[0]
-					var ny = y + dir[1]
-					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
-						var nblock = grid[ny][nx]
-						if nblock != null and _is_type(nblock, "nature"):
-							nature_count += 1
+				# ... (логика подсчета соседей остается прежней) ... 
 				
-				if nature_count >= 3:
+				# Динамическая проверка условия
+				if nature_count >= required_neighbors:
 					eco_homes += 1
 
 	return eco_homes

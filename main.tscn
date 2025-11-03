@@ -68,10 +68,70 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 12
 
-[node name="ScorePanel" type="TextureRect" parent="CanvasLayer"]
-offset_left = 113.0
+[node name="TurnPanel" type="TextureRect" parent="CanvasLayer"]
+offset_left = 114.0
 offset_top = 15.0
-offset_right = 182.0
+offset_right = 183.0
+offset_bottom = 84.0
+texture = ExtResource("3_h2yge")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="CanvasLayer/TurnPanel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 2.0
+offset_right = 71.0
+offset_bottom = 28.0
+size_flags_horizontal = 8
+size_flags_vertical = 0
+text = "Ход"
+label_settings = SubResource("LabelSettings_h2yge")
+
+[node name="Turn" type="Label" parent="CanvasLayer/TurnPanel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 32.0
+offset_right = 71.0
+offset_bottom = 58.0
+size_flags_horizontal = 8
+size_flags_vertical = 0
+text = "0"
+label_settings = SubResource("LabelSettings_0xm2m")
+
+[node name="EpochPanel" type="TextureRect" parent="CanvasLayer"]
+offset_left = 28.0
+offset_top = 15.0
+offset_right = 97.0
+offset_bottom = 84.0
+texture = ExtResource("3_h2yge")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="CanvasLayer/EpochPanel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 2.0
+offset_right = 71.0
+offset_bottom = 28.0
+size_flags_horizontal = 8
+size_flags_vertical = 0
+text = "Эпоха"
+label_settings = SubResource("LabelSettings_h2yge")
+
+[node name="Epoch" type="Label" parent="CanvasLayer/EpochPanel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 32.0
+offset_right = 71.0
+offset_bottom = 58.0
+size_flags_horizontal = 8
+size_flags_vertical = 0
+text = "0"
+label_settings = SubResource("LabelSettings_0xm2m")
+
+[node name="ScorePanel" type="TextureRect" parent="CanvasLayer"]
+offset_left = 199.0
+offset_top = 15.0
+offset_right = 268.0
 offset_bottom = 84.0
 texture = ExtResource("3_h2yge")
 expand_mode = 1
@@ -96,35 +156,4 @@ offset_bottom = 58.0
 size_flags_horizontal = 8
 size_flags_vertical = 0
 text = "0"
-label_settings = SubResource("LabelSettings_0xm2m")
-
-[node name="TurnPanel" type="TextureRect" parent="CanvasLayer"]
-offset_left = 28.0
-offset_top = 15.0
-offset_right = 97.0
-offset_bottom = 84.0
-texture = ExtResource("3_h2yge")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="CanvasLayer/TurnPanel"]
-layout_mode = 0
-offset_left = 8.0
-offset_top = 2.0
-offset_right = 71.0
-offset_bottom = 28.0
-size_flags_horizontal = 8
-size_flags_vertical = 0
-text = "Ход"
-label_settings = SubResource("LabelSettings_h2yge")
-
-[node name="Turn" type="Label" parent="CanvasLayer/TurnPanel"]
-layout_mode = 0
-offset_left = 8.0
-offset_top = 32.0
-offset_right = 71.0
-offset_bottom = 58.0
-size_flags_horizontal = 8
-size_flags_vertical = 0
-text = "1
-"
 label_settings = SubResource("LabelSettings_0xm2m")

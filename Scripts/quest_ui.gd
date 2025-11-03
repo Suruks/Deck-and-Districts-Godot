@@ -54,12 +54,15 @@ func update_ui():
 	
 	label_name.bbcode_text = quest.short_desc
 
+	var current_target = quest.get_target_progress()
+	var current_reward = quest.get_reward_cards()
+
 	progress_bar.min_value = 0
-	progress_bar.max_value = quest.target_progress
+	progress_bar.max_value = current_target
 	progress_bar.value = quest.current_progress
-	label_progress.text = str(quest.current_progress) + "/" + str(quest.target_progress)
+	label_progress.text = str(quest.current_progress) + "/" + str(current_target)
 	
-	reward_label.text = str(quest.reward_cards)
+	reward_label.text = str(current_reward)
 
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER

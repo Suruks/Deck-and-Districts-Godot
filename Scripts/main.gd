@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var hand_script: Hand = $CanvasLayer/HandContainer as Hand
 @onready var quest_deck: QuestDeck = QuestDeck.new()
+@onready var epoch_label: Label = $CanvasLayer/EpochPanel/Epoch
 @onready var score_label: Label = $CanvasLayer/ScorePanel/Score
 @onready var turn_label: Label = $CanvasLayer/TurnPanel/Turn
 @onready var deck_count_label: RichTextLabel = $CanvasLayer/DeckSprite/DeckCount
@@ -23,6 +24,7 @@ var grid_manager: GridManager
 
 var replace_hand_sprite: TextureButton
 
+var epoch = 4
 var turn = 1
 var total_score = 0
 
@@ -72,6 +74,9 @@ func _ready():
 
 	# Колода
 	_update_deck_ui()
+	
+	turn_label.text = str(turn)
+	epoch_label.text = str(epoch)
 
 	# Кнопка replace_hand
 	replace_hand_sprite = TextureButton.new()
@@ -87,7 +92,7 @@ func _ready():
 	replace_hand_sprite.connect("gui_input", Callable(self, "_on_replace_hand_input"))
 	replace_hand_sprite.connect("mouse_exited", Callable(self, "_on_hover_exit"))
 	
-	init_quest_system()
+	init_quest_system(epoch)
 
 # --- Квесты ---
 func create_quest_ui(quest: Quest) -> Control:
@@ -103,7 +108,7 @@ func create_quest_ui(quest: Quest) -> Control:
 func update_quest_scores():
 	var current_grid = grid_manager.get_grid()
 	var current_grid_size = grid_manager.get_grid_size()
-	quest_manager.compute_all_scores(current_grid, current_grid_size, turn)
+	quest_manager.compute_all_scores(current_grid, current_grid_size, turn, epoch)
 
 func _on_quest_completed(reward_count: int, quest: Quest):
 	var duration = turn - quest.start_turn
@@ -119,7 +124,7 @@ func _on_quest_completed(reward_count: int, quest: Quest):
 	total_score += added * 10 + not_added * 20
 	score_label.text = str(total_score)
 	
-	quest_manager.compute_all_scores(grid_manager.get_grid(), grid_manager.get_grid_size(), turn)
+	quest_manager.compute_all_scores(grid_manager.get_grid(), grid_manager.get_grid_size(), turn, epoch)
 	
 	_update_deck_ui()
 
@@ -281,17 +286,15 @@ func _input(event):
 		# Main.gd спрашивает CardManager, выбрана ли карта
 		if card_manager.get_selected_card() != null:
 			grid_manager.update_preview() # Вызываем локальный метод main.gd
-			
-func init_quest_system():
+
+func init_quest_system(epoch: int):
 	# 1. Инициализация QuestDeck и создание экземпляра QuestManager
 	quest_deck.init_quests()
 	quest_manager = QuestManager.new(quest_deck, quest_ui_scene)
 	add_child(quest_manager)
 
-	# 2. Установка контейнера (убеждаемся, что @onready переменные готовы)
-	# Этот шаг теперь максимально надежен, так как вызывается после _ready()
 	quest_manager.active_quests_container = active_quests_container
 	
-	# 3. Настройка и подключение сигналов
-	quest_manager.setup_quests(3, turn)
+	var difficulty = str(epoch)
+	quest_manager.setup_quests(3, turn, difficulty)
 	quest_manager.connect("quest_completed", Callable(self, "_on_quest_completed"))

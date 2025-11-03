@@ -17,7 +17,7 @@ func _init(_quest_deck: QuestDeck, _quest_ui_scene: PackedScene):
 	quest_ui_scene_ref = _quest_ui_scene # Если quest_ui_scene = null, то setup_quests сработает как "защитник"
 
 # Настройка квестов
-func setup_quests(count := 3, current_turn: int = 1):
+func setup_quests(count: int, current_turn: int, difficulty: String):
 	if quest_ui_scene_ref == null:
 		printerr("QuestManager: Не загружена QuestUI.tscn.")
 		return
@@ -31,7 +31,7 @@ func setup_quests(count := 3, current_turn: int = 1):
 		child.queue_free()
 
 	for i in range(count):
-		var q = quest_deck.draw_quest()
+		var q = quest_deck.draw_quest(difficulty)
 		if q == null:
 			break
 			
@@ -45,7 +45,7 @@ func setup_quests(count := 3, current_turn: int = 1):
 		ui.call_deferred("update_ui")
 
 # Расчёт очков и завершение квестов
-func compute_all_scores(grid: Array, grid_size: int, current_turn: int) -> int:
+func compute_all_scores(grid: Array, grid_size: int, current_turn: int, epoch: int) -> int:
 	var total_score := 0
 	var completed_indices: Array = []
 
@@ -61,7 +61,7 @@ func compute_all_scores(grid: Array, grid_size: int, current_turn: int) -> int:
 	completed_indices.sort()
 	completed_indices.reverse() # теперь в порядке убывания
 	for idx in completed_indices:
-		complete_quest_by_index(idx, current_turn)
+		complete_quest_by_index(idx, current_turn, epoch)
 
 	# Обновляем UI оставшихся квестов
 	if is_instance_valid(active_quests_container):
@@ -71,10 +71,10 @@ func compute_all_scores(grid: Array, grid_size: int, current_turn: int) -> int:
 
 	return total_score
 	
-func complete_quest_by_index(index: int, current_turn: int) -> void:
+func complete_quest_by_index(index: int, current_turn: int, epoch: int) -> void:
 	if index < 0 or index >= active_quests.size():
 		return
-
+	var current_difficulty = str(epoch)
 	var q: Quest = active_quests[index]
 
 	# Удаляем квест из массива
@@ -103,7 +103,7 @@ func complete_quest_by_index(index: int, current_turn: int) -> void:
 		ui_node.queue_free()
 
 	# Берём новый квест и создаём UI на том же месте (если есть)
-	var new_q = quest_deck.draw_quest()
+	var new_q = quest_deck.draw_quest(current_difficulty)
 	MyLogger.log("Квест получен: " + new_q.short_desc)
 	if new_q:
 		new_q.start_turn = current_turn
@@ -121,10 +121,3 @@ func complete_quest_by_index(index: int, current_turn: int) -> void:
 
 	var reward_count: int = q.reward_cards
 	quest_completed.emit(reward_count, q)
-
-# Завершение одного квеста
-func complete_quest(q: Quest, current_turn: int) -> void:
-	var idx = active_quests.find(q)
-	if idx == -1:
-		return
-	complete_quest_by_index(idx, current_turn)
