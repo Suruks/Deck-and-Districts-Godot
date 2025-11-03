@@ -24,8 +24,6 @@ func calculate_score(grid: Array, grid_size: int) -> int:
 			score = _calc_heart_of_culture(grid, grid_size)
 		"life_belt":
 			score = _calc_life_belt(grid, grid_size)
-		"soul_of_city":
-			score = _calc_soul_of_city(grid, grid_size)
 		"eco_industry":
 			score = _calc_eco_industry(grid, grid_size)
 		"eco_homes":
@@ -50,10 +48,6 @@ func calculate_score(grid: Array, grid_size: int) -> int:
 			score = _calc_diverse_block(grid, grid_size)
 		"diverse_neighbors":
 			score = _calc_diverse_neighbors(grid, grid_size)
-		"monoculture":
-			score = _calc_uniform_rows(grid, grid_size)
-		"monoculture":
-			score = _calc_uniform_rows(grid, grid_size)
 		"neighboring_nature":
 			score = _calc_neighboring_nature(grid, grid_size) # q23
 		"residential_isolation":
@@ -184,45 +178,6 @@ func _calc_life_belt(grid: Array, grid_size: int) -> int:
 	return bonus
 
 
-# --- 6. Душа города ---
-func _calc_soul_of_city(grid, grid_size):
-	var visited := {}
-	var chains := 0
-
-	for y in range(grid_size):
-		for x in range(grid_size):
-			if grid[y][x] == null:
-				continue
-			var key = str(x) + "," + str(y)
-			if visited.has(key):
-				continue
-
-			var cell_type = grid[y][x].type
-			var chain_len = _dfs_chain(grid, x, y, grid_size, visited, cell_type)
-			if chain_len >= 3:
-				chains += 1
-
-	return chains
-
-
-func _dfs_chain(grid, x, y, grid_size, visited: Dictionary, cell_type: String) -> int:
-	if x < 0 or y < 0 or x >= grid_size or y >= grid_size:
-		return 0
-	var key = str(x) + "," + str(y)
-	if visited.has(key) or grid[y][x] == null:
-		return 0
-	if not _is_type(grid[y][x], cell_type):
-		return 0
-
-	visited[key] = true
-	var length := 1
-
-	for dir in [[1,0], [-1,0], [0,1], [0,-1]]:
-		length += _dfs_chain(grid, x + dir[0], y + dir[1], grid_size, visited, cell_type)
-
-	return length
-
-
 # --- 8. Экологичная индустрия ---
 func _calc_eco_industry(grid, grid_size):
 	var industrial_count := 0
@@ -232,7 +187,7 @@ func _calc_eco_industry(grid, grid_size):
 				industrial_count += 1
 				if not _has_neighbor(grid, x, y, grid_size, "industrial"):
 					return 0
-	return 5 if industrial_count >= 5 else 0
+	return industrial_count
 
 
 # --- 9. Эко-жильё ---
@@ -258,7 +213,6 @@ func _calc_eco_homes(grid, grid_size):
 
 
 
-# --- 10. Диагональный город ---
 func _calc_diagonal_city(grid, grid_size):
 	var lines := 0
 
@@ -269,14 +223,19 @@ func _calc_diagonal_city(grid, grid_size):
 			if first == null:
 				continue
 			var type = first.type
-			var valid := true
-			for i in range(3):
-				var cell = grid[y + i][x + i]
-				if cell == null or not _is_type(cell, type):
-					valid = false
+
+			var length := 0
+			while y + length < grid_size and x + length < grid_size:
+				var cell = grid[y + length][x + length]
+				if cell == null or cell.type != type:
 					break
-			if valid:
+				length += 1
+
+			if length >= 3:
 				lines += 1
+				# пропускаем оставшуюся часть этой линии
+				x += length - 1
+				y += length - 1
 
 	# ↙ диагонали (вверх-вправо)
 	for y in range(2, grid_size):
@@ -285,16 +244,21 @@ func _calc_diagonal_city(grid, grid_size):
 			if first == null:
 				continue
 			var type = first.type
-			var valid := true
-			for i in range(3):
-				var cell = grid[y - i][x + i]
-				if cell == null or not _is_type(cell, type):
-					valid = false
+
+			var length := 0
+			while y - length >= 0 and x + length < grid_size:
+				var cell = grid[y - length][x + length]
+				if cell == null or cell.type != type:
 					break
-			if valid:
+				length += 1
+
+			if length >= 3:
 				lines += 1
+				x += length - 1
+				y -= length - 1
 
 	return lines
+
 
 
 # --- 12. Соседство искусства ---
@@ -389,7 +353,7 @@ func _dfs_group(grid, x, y, grid_size, t, visited):
 	if x < 0 or y < 0 or x >= grid_size or y >= grid_size:
 		return 0
 
-	var key = str(x)+","+str(y)
+	var key = str(t) + ":" + str(x) + "," + str(y)
 	if visited.has(key):
 		return 0
 
@@ -531,41 +495,6 @@ func _calc_diverse_block(grid, grid_size):
 	return 0
 
 
-	
-	
-# --- Единый стиль ---
-func _calc_uniform_rows(grid, grid_size):
-	var progress := 0
-	
-	# Проверяем горизонтальные ряды
-	for y in range(grid_size):
-		var first_type = grid[y][0]
-		var uniform := true
-		
-		for x in range(1, grid_size):
-			if grid[y][x] != first_type:
-				uniform = false
-				break
-		
-		# Засчитываем, если ряд полностью однородный и длина не меньше 3
-		if uniform and grid_size >= 3:
-			progress += 1
-	
-	# Проверяем вертикальные ряды
-	for x in range(grid_size):
-		var first_type = grid[0][x]
-		var uniform := true
-		
-		for y in range(1, grid_size):
-			if grid[y][x] != first_type:
-				uniform = false
-				break
-		
-		if uniform and grid_size >= 3:
-			progress += 1
-	
-	return progress
-
 func _calc_neighboring_nature(grid, grid_size):
 	var count := 0
 
@@ -620,11 +549,8 @@ func _calc_edge_residential_pair(grid, grid_size):
 	var count := 0
 
 	for y in range(grid_size):
-		for x in range(grid_size):
-			# Проверка, находится ли район на краю поля
-			var is_on_edge = (x == 0 or y == 0 or x == grid_size - 1 or y == grid_size - 1)
-			
-			if is_on_edge and _is_type(grid[y][x], "residential"):
+		for x in range(grid_size):	
+			if _is_type(grid[y][x], "residential"):
 				var has_res_neighbor := false
 				
 				# Проверка на наличие соседнего жилого района
@@ -647,7 +573,7 @@ func _calc_nature_mix(grid, grid_size):
 
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "nature"):
+			if _is_type(grid[y][x], "culture"):
 				var has_residential := false
 				var has_industrial := false
 				
@@ -676,6 +602,7 @@ func _calc_type_difference(grid, grid_size):
 			elif _is_type(grid[y][x], "industrial"):
 				industrial_count += 1
 				
+	#print("residential_count = ", residential_count, ", industrial_count = ", industrial_count)
 	var difference = abs(industrial_count - residential_count)
 	
 	# Прогресс = достигнутая разница
@@ -763,8 +690,6 @@ func _calc_mixed_rows(grid, grid_size):
 	
 func _calc_unique_squares(grid, grid_size):
 	var unique_squares := 0
-	var types = ["residential", "industrial", "culture", "nature"]
-
 	# Проход по всем возможным верхним левым углам квадратов 2x2
 	for y in range(grid_size - 1):
 		for x in range(grid_size - 1):
