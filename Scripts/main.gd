@@ -26,7 +26,7 @@ var replace_hand_sprite: TextureButton
 
 var epoch = 3
 var turns_in_epoch = 25
-var max_epoch = 4
+var max_epoch = 5
 var turn = 1
 var total_score = 0
 
@@ -179,6 +179,10 @@ func _on_placement_attempted():
 		epoch += 1
 		MyLogger.log("Началась эпоха " + str(epoch) + "! Квесты были усложнены")
 		epoch_label.text = str(epoch)
+		if epoch == 5:
+			var difficulty_str = str(epoch)
+			# Вызываем функцию, которую мы сейчас исправим в QuestManager.gd
+			quest_manager.add_quest_slot(turn, difficulty_str)
 	
 	# 6. Обновление UI/Квестов
 	_update_deck_ui() # Обновляем счетчик

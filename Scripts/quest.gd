@@ -153,6 +153,7 @@ func _calc_industrial_balance(grid, grid_size):
 
 # --- 4. Сердце культуры ---
 func _calc_heart_of_culture(grid, grid_size):
+	var required_types = _get_current_param("required_types", 3)
 	var count := 0
 	
 	for y in range(grid_size):
@@ -174,9 +175,14 @@ func _calc_heart_of_culture(grid, grid_size):
 				if neighbor != null and neighbor is CityBlock:
 					neighbor_types[neighbor.type] = true
 			
-			# Проверяем наличие всех трёх других типов
-			if "residential" in neighbor_types and "industrial" in neighbor_types and "nature" in neighbor_types:
-				count += 1
+			if required_types == 3:
+				# Проверяем наличие всех трёх других типов
+				if "residential" in neighbor_types and "industrial" in neighbor_types and "nature" in neighbor_types:
+					count += 1
+			if required_types == 4:
+				# Проверяем наличие всех 4 типов
+				if "residential" in neighbor_types and "industrial" in neighbor_types and "nature" in neighbor_types and "culture" in neighbor_types:
+					count += 1
 	
 	return count
 
@@ -219,14 +225,41 @@ func _calc_life_belt(grid: Array, grid_size: int) -> int:
 
 # --- 8. Экологичная индустрия ---
 func _calc_eco_industry(grid, grid_size):
+	var visited := {}
 	var industrial_count := 0
+	var min_group_size = _get_current_param("group_size", 2)
+
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "industrial"):
-				industrial_count += 1
-				if not _has_neighbor(grid, x, y, grid_size, "industrial"):
+			var cell = grid[y][x]
+			if cell != null and _is_type(cell, "industrial") and not visited.has(str(x) + "," + str(y)):
+				var group_size = _dfs_group_new(grid, x, y, grid_size, "industrial", visited)
+				industrial_count += group_size
+				if group_size < min_group_size:
 					return 0
+
 	return industrial_count
+
+
+func _dfs_group_new(grid, x, y, grid_size, target_type, visited):
+	if x < 0 or y < 0 or x >= grid_size or y >= grid_size:
+		return 0
+
+	var key = str(x) + "," + str(y)
+	if visited.has(key):
+		return 0
+
+	var cell = grid[y][x]
+	if cell == null or not _is_type(cell, target_type):
+		return 0
+
+	visited[key] = true
+	var size := 1
+
+	for dir in [[1,0], [-1,0], [0,1], [0,-1]]:
+		size += _dfs_group(grid, x + dir[0], y + dir[1], grid_size, target_type, visited)
+
+	return size
 
 
 # --- 9. Эко-жильё ---

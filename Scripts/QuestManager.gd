@@ -121,3 +121,27 @@ func complete_quest_by_index(index: int, current_turn: int, epoch: int) -> void:
 
 	var reward_count: int = q.get_reward_cards()
 	quest_completed.emit(reward_count, q)
+	
+func add_quest_slot(current_turn: int, current_difficulty: String):
+	var new_q = quest_deck.draw_quest(current_difficulty)
+	if new_q == null:
+		MyLogger.log("Не удалось добавить слот: в колоде нет квестов.")
+		return
+		
+	MyLogger.log("Количество квестов увеличено!")
+	MyLogger.log("Квест получен: " + new_q.short_desc)
+	
+	new_q.start_turn = current_turn
+	active_quests.append(new_q) # Добавляем в конец списка
+
+	var new_ui = quest_ui_scene_ref.instantiate()
+	# сохраняем явную привязку
+	if new_ui.has_method("set_meta"):
+		new_ui.set_meta("quest", new_q)
+	new_ui.quest = new_q
+	
+	if is_instance_valid(active_quests_container):
+		active_quests_container.add_child(new_ui)
+		new_ui.call_deferred("update_ui")
+	else:
+		printerr("QuestManager: active_quests_container невалиден, UI для нового квеста не создан.")

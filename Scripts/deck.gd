@@ -3,7 +3,8 @@ class_name Deck
 
 var cards = []
 
-const max_cards = 30
+var max_cards = 30
+var cards_to_extension = 0
 
 func init_deck(count: int):
 	cards.clear()
@@ -17,8 +18,12 @@ func draw_card():
 	
 func add_cards(count: int = 1) -> int:
 	var added = 0
-	for i in range(count):
+	for i in range(count): # for each card
 		if cards.size() >= max_cards:
+			cards_to_extension += 1
+			if cards_to_extension >= 4: # увеличение максимума
+				cards_to_extension = 0
+				max_cards += 1
 			break
 		var new_card = Card.generate_data("random")
 		var pos = randi() % (cards.size() + 1)
