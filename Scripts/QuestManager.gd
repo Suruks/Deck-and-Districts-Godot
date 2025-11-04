@@ -47,21 +47,10 @@ func setup_quests(count: int, current_turn: int, difficulty: String):
 # Расчёт очков и завершение квестов
 func compute_all_scores(grid: Array, grid_size: int, current_turn: int, epoch: int) -> int:
 	var total_score := 0
-	var completed_indices: Array = []
+	var completed_quests: Array = []
 
-	# Собираем индексы выполненных квестов (фиксируем индексы на момент проверки)
-	for i in range(active_quests.size()):
-		var q: Quest = active_quests[i]
-		var score = q.calculate_score(grid, grid_size)
-		total_score += score
-		if q.is_completed():
-			completed_indices.append(i)
-
-	# Завершаем квесты в порядке убывания индекса — это предотвращает сдвиги индексов
-	completed_indices.sort()
-	completed_indices.reverse() # теперь в порядке убывания
-	for idx in completed_indices:
-		complete_quest_by_index(idx, current_turn, epoch)
+	for q_to_complete in completed_quests:
+		complete_quest_by_object(q_to_complete, current_turn, epoch, grid, grid_size)
 
 	# Обновляем UI оставшихся квестов
 	if is_instance_valid(active_quests_container):
@@ -71,53 +60,49 @@ func compute_all_scores(grid: Array, grid_size: int, current_turn: int, epoch: i
 
 	return total_score
 	
-func complete_quest_by_index(index: int, current_turn: int, epoch: int) -> void:
-	if index < 0 or index >= active_quests.size():
+func complete_quest_by_object(q_to_complete: Quest, current_turn: int, epoch: int, grid: Array, grid_size: int) -> void:
+	# 1. Найти индекс квеста, который нужно завершить.
+	# Если квест уже был удален из-за каскада, active_quests.find вернет -1.
+	var index = active_quests.find(q_to_complete)
+	if index == -1:
 		return
+	
 	var current_difficulty = str(epoch)
-	var q: Quest = active_quests[index]
+	var q: Quest = active_quests[index] # Объект q == q_to_complete
 
-	# Удаляем квест из массива
-	active_quests.remove_at(index)
+	# Удаляем квест из массива по найденному индексу
+	active_quests.remove_at(index) 
 
-	# Находим соответствующий UI-узел привязанный к этому квесту (без предположений о порядке)
-	var ui_node: Node = null
-	if is_instance_valid(active_quests_container):
-		for child in active_quests_container.get_children():
-			# предполагаем, что UI-узел хранит ссылку на свой квест в поле 'quest'
-			if child.has_meta("quest") and child.get_meta("quest") == q:
+	# 2. Находим соответствующий UI-узел по ссылке на объект квеста (наиболее надежный способ)
+	var ui_node: Node = null 
+	if is_instance_valid(active_quests_container): 
+		for child in active_quests_container.get_children(): 
+			# Используем ссылку на объект квеста для поиска узла UI
+			if "quest" in child and child.quest == q: 
 				ui_node = child
 				break
-			# или альтернативно: если в ui есть свойство quest (как вы раньше делали)
-			if "quest" in child and child.quest == q:
-				ui_node = child
-				break
-
-	# Если не нашли по привязке — как запасной вариант берём узел по индексу (на случай, если ui и active_quests синхронизованы)
-	if ui_node == null and is_instance_valid(active_quests_container) and active_quests_container.get_child_count() > index:
-		var candidate = active_quests_container.get_child(index)
-		# проверка: если у узла вообще нет привязки, всё равно удаляем
-		ui_node = candidate
 
 	if is_instance_valid(ui_node):
-		ui_node.queue_free()
+		ui_node.queue_free() 
 
-	# Берём новый квест и создаём UI на том же месте (если есть)
+	# 3. Берем новый квест и создаем UI на том же месте
 	var new_q = quest_deck.draw_quest(current_difficulty)
 	MyLogger.log("Квест получен: " + new_q.short_desc)
 	if new_q:
 		new_q.start_turn = current_turn
-		active_quests.insert(index, new_q)
+		active_quests.insert(index, new_q) # Вставляем на место удаленного [cite: 4]
 	
 		var new_ui = quest_ui_scene_ref.instantiate()
-		# сохраняем явную привязку, чтобы можно было надёжно искать UI по квесту
-		if new_ui.has_method("set_meta"):
-			new_ui.set_meta("quest", new_q)
+		# ... (настройка new_ui) ...
 		new_ui.quest = new_q
 		active_quests_container.add_child(new_ui)
 		# Перемещаем на нужную позицию
 		active_quests_container.move_child(new_ui, clamp(index, 0, active_quests_container.get_child_count()-1))
 		new_ui.call_deferred("update_ui")
+		
+		var new_q_score = new_q.calculate_score(grid, grid_size) #СЧИТАЕМ НОВЫЙ КВЕСТ
+		if new_q.is_completed():
+			complete_quest_by_object(new_q, current_turn, epoch, grid, grid_size)
 
 	var reward_count: int = q.get_reward_cards()
 	quest_completed.emit(reward_count, q)

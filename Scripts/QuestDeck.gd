@@ -220,19 +220,19 @@ func init_quests():
 	q13.short_desc = "Группы из 3"
 	q13.difficulty_levels = {
 		"3": { 
-			"target_progress": 5, 
-			"reward_cards": 3,
-			"description": colorize_text("Построй 5 групп из 3 районов одного типа (тип районов между разными группами может отличаться).")
-		},
-		"4": { 
 			"target_progress": 6, 
 			"reward_cards": 3,
 			"description": colorize_text("Построй 6 групп из 3 районов одного типа (тип районов между разными группами может отличаться).")
 		},
-		"5": { 
-			"target_progress": 8, 
+		"4": { 
+			"target_progress": 7, 
 			"reward_cards": 3,
-			"description": colorize_text("Построй 8 групп из 3 районов одного типа (тип районов между разными группами может отличаться).")
+			"description": colorize_text("Построй 7 групп из 3 районов одного типа (тип районов между разными группами может отличаться).")
+		},
+		"5": { 
+			"target_progress": 10, 
+			"reward_cards": 3,
+			"description": colorize_text("Построй 10 групп из 3 районов одного типа (тип районов между разными группами может отличаться).")
 		}
 	}
 	quests.append(q13)
@@ -574,17 +574,17 @@ func init_quests():
 	q29.short_desc = "Культура рядом с жильём"
 	q29.difficulty_levels = {
 		"3": { 
-			"target_progress": 5, 
+			"target_progress": 6, 
 			"reward_cards": 3,
 			"description": colorize_text("Построй 6 культурных районов, соседствующих с 2+ жилыми районами.")
 		},
 		"4": { 
-			"target_progress": 6, 
+			"target_progress": 7, 
 			"reward_cards": 3,
 			"description": colorize_text("Построй 7 культурных районов, соседствующих с 2+ жилыми районами.")
 		},
 		"5": { 
-			"target_progress": 8, 
+			"target_progress": 9, 
 			"reward_cards": 3,
 			"description": colorize_text("Построй 9 культурных районов, соседствующих с 2+ жилыми районами.")
 		}

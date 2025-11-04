@@ -258,7 +258,7 @@ func _dfs_group_new(grid, x, y, grid_size, target_type, visited):
 	var size := 1
 
 	for dir in [[1,0], [-1,0], [0,1], [0,-1]]:
-		size += _dfs_group(grid, x + dir[0], y + dir[1], grid_size, target_type, visited)
+		size += _dfs_group_new(grid, x + dir[0], y + dir[1], grid_size, target_type, visited)
 
 	return size
 
@@ -602,6 +602,7 @@ func _calc_diverse_block(grid, grid_size):
 
 
 func _calc_neighboring_nature(grid, grid_size):
+	
 	var count := 0
 
 	for y in range(grid_size):

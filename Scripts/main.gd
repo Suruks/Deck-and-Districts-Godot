@@ -126,8 +126,6 @@ func _on_quest_completed(reward_count: int, quest: Quest):
 	total_score += added * 10 + not_added * 20
 	score_label.text = str(total_score)
 	
-	quest_manager.compute_all_scores(grid_manager.get_grid(), grid_manager.get_grid_size(), turn, epoch)
-	
 	_update_deck_ui()
 
 
