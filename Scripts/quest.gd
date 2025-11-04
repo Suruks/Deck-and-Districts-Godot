@@ -125,18 +125,19 @@ func _has_neighbor(grid, x, y, grid_size, target_type):
 
 # --- 1. Город в зелени ---
 func _calc_city_in_green(grid, grid_size):
+	var penalty = _get_current_param("penalty", 1)
 	var bonus := 0
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "residential"):
-				bonus += 1 if _has_neighbor(grid, x, y, grid_size, "nature") else -1
+				bonus += 1 if _has_neighbor(grid, x, y, grid_size, "nature") else -penalty
 	return bonus
 
 
 # --- 2. Баланс индустрии ---
 func _calc_industrial_balance(grid, grid_size):
 	var progress := 0
-	
+	var penalty = _get_current_param("penalty", 1)
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
@@ -146,7 +147,7 @@ func _calc_industrial_balance(grid, grid_size):
 				if has_industrial and has_culture:
 					progress += 1
 				elif not has_industrial and not has_culture:
-					progress -= 1
+					progress -= penalty
 	
 	return progress
 
@@ -357,13 +358,14 @@ func _calc_art_neighborhood(grid, grid_size):
 
 # --- 13. Природное равновесие ---
 func _calc_natural_balance(grid, grid_size):
+	var penalty = _get_current_param("penalty", 1)
 	var score := 0
 	for row in grid:
 		for cell in row:
 			if _is_type(cell, "nature"):
 				score += 1
 			elif _is_type(cell, "industrial"):
-				score -= 1
+				score -= penalty
 	return score
 
 
@@ -387,6 +389,7 @@ func _calc_culture_isolation(grid, grid_size):
 
 # --- 15. Индустриальный ряд ---
 func _calc_industrial_row(grid, grid_size):
+	var mode = _get_current_string_param("equals", "equals_or_more")
 	var count_rows := 0
 	
 	# Горизонтальные ряды
@@ -395,8 +398,12 @@ func _calc_industrial_row(grid, grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
 				industrial_in_row += 1
-		if industrial_in_row >= 4:
-			count_rows += 1
+		if mode == "equals_or_more":
+			if industrial_in_row >= 4:
+				count_rows += 1
+		if mode == "equals":
+			if industrial_in_row == 4:
+				count_rows += 1
 	
 	# Вертикальные ряды
 	for x in range(grid_size):
@@ -404,8 +411,12 @@ func _calc_industrial_row(grid, grid_size):
 		for y in range(grid_size):
 			if _is_type(grid[y][x], "industrial"):
 				industrial_in_col += 1
-		if industrial_in_col >= 4:
-			count_rows += 1
+		if mode == "equals_or_more":
+			if industrial_in_col >= 4:
+				count_rows += 1
+		if mode == "equals":
+			if industrial_in_col == 4:
+				count_rows += 1
 	
 	return count_rows
 
@@ -781,6 +792,7 @@ func _calc_mixed_rows(grid, grid_size):
 		if all_types_present:
 			mixed_lines += 1
 
+	print("Смешанных рядов обнаружено: ", mixed_lines)
 	return mixed_lines
 	
 func _calc_unique_squares(grid, grid_size):
