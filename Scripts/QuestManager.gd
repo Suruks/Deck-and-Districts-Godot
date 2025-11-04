@@ -48,7 +48,13 @@ func setup_quests(count: int, current_turn: int, difficulty: String):
 func compute_all_scores(grid: Array, grid_size: int, current_turn: int, epoch: int) -> int:
 	var total_score := 0
 	var completed_quests: Array = []
-
+	
+	for q in active_quests:
+		var score = q.calculate_score(grid, grid_size)
+		total_score += score
+		if q.is_completed():
+			completed_quests.append(q)
+			
 	for q_to_complete in completed_quests:
 		complete_quest_by_object(q_to_complete, current_turn, epoch, grid, grid_size)
 

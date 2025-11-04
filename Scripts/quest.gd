@@ -127,12 +127,16 @@ func _has_neighbor(grid, x, y, grid_size, target_type):
 func _calc_city_in_green(grid, grid_size):
 	var penalty = _get_current_param("penalty", 1)
 	var bonus := 0
+	
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "residential"):
-				bonus += 1 if _has_neighbor(grid, x, y, grid_size, "nature") else -penalty
+			var cell = grid[y][x]
+			if _is_type(cell, "residential"):
+				if _has_neighbor(grid, x, y, grid_size, "nature"):
+					bonus += 1
+				else:
+					bonus -= penalty
 	return bonus
-
 
 # --- 2. Баланс индустрии ---
 func _calc_industrial_balance(grid, grid_size):
