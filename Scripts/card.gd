@@ -119,17 +119,16 @@ func draw_blocks():
 		child.queue_free()
 
 	# Найдём центр формы, чтобы карта выглядела ровно по центру
-	var min_x = INF
-	var max_x = -INF
-	var min_y = INF
-	var max_y = -INF
+	var positions = []
 	for v in blocks:
-		min_x = min(min_x, v.x)
-		max_x = max(max_x, v.x)
-		min_y = min(min_y, v.y)
-		max_y = max(max_y, v.y)
+		positions.append(iso_to_screen(v))
 
-	var center_offset = iso_to_screen(Vector2((min_x + max_x) / 2.0, (min_y + max_y) / 2.0))
+	var avg = Vector2.ZERO
+	for p in positions:
+		avg += p
+	avg /= positions.size()
+
+	var center_offset = avg
 
 	# Создаём изометрические тайлы
 	for i in range(blocks.size()):

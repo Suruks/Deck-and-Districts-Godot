@@ -61,12 +61,12 @@ func init_quests():
 		"3": { 
 			"target_progress": 6, 
 			"reward_cards": 4,
-			"description": colorize_text("+1 прогресс за каждый промышленный район, соседствующий с другим промышленным и культурным районом.\n−2 прогресса за промышленный квартал, не соседствующий ни с промышленным, ни с культурным.")
+			"description": colorize_text("+1 прогресс за каждый промышленный район, соседствующий с другим промышленным и культурным районом.\n−1 прогресса за промышленный квартал, не соседствующий ни с промышленным, ни с культурным.")
 		},
 		"4": { 
 			"target_progress": 7, 
 			"reward_cards": 4,
-			"description": colorize_text("+1 прогресс за каждый промышленный район, соседствующий с другим промышленным и культурным районом.\n−2 прогресса за промышленный квартал, не соседствующий ни с промышленным, ни с культурным.")
+			"description": colorize_text("+1 прогресс за каждый промышленный район, соседствующий с другим промышленным и культурным районом.\n−1 прогресса за промышленный квартал, не соседствующий ни с промышленным, ни с культурным.")
 		},
 	}
 	quests.append(q2)
@@ -79,12 +79,12 @@ func init_quests():
 		"3": { 
 			"target_progress": 5, 
 			"reward_cards": 3,
-			"description": colorize_text("Построй 5 культурных районов, соседствующих минимум с 3-мя видами районов.")
+			"description": colorize_text("Построй 5 культурных районов, соседствующих с 3-мя другими видами районов.")
 		},
 		"4": { 
 			"target_progress": 6, 
 			"reward_cards": 3,
-			"description": colorize_text("Построй 6 культурных районов, соседствующих минимум с 3-мя видами районов.") # Обновлено 5 -> 6
+			"description": colorize_text("Построй 6 культурных районов, соседствующих с 3-мя другими видами районов.") # Обновлено 5 -> 6
 		},
 	}
 	quests.append(q4)
@@ -189,12 +189,12 @@ func init_quests():
 	q14.short_desc = "+1 за природу, -1 за заводы"
 	q14.difficulty_levels = {
 		"3": { 
-			"target_progress": 7, 
+			"target_progress": 6, 
 			"reward_cards": 3,
 			"description": colorize_text("+1 прогресс за каждый природный район.\n-1 прогресса за каждый промышленный.")
 		},
 		"4": { 
-			"target_progress": 9, 
+			"target_progress": 8, 
 			"reward_cards": 3,
 			"description": colorize_text("+1 прогресс за каждый природный район.\n-1 прогресса за каждый промышленный.") # Обновлено по target
 		},
@@ -351,12 +351,12 @@ func init_quests():
 	q24.difficulty_levels = {
 		"3": { 
 			"target_progress": 5, 
-			"reward_cards": 3,
+			"reward_cards": 4,
 			"description": colorize_text("Построй 5 жилых районов, у которых нет промышленных районов по соседству или диагонали")
 		},
 		"4": { 
 			"target_progress": 6, 
-			"reward_cards": 3,
+			"reward_cards": 4,
 			"description": colorize_text("Построй 6 жилых районов, у которых нет промышленных районов по соседству или диагонали") # Обновлено 6 -> 7
 		},
 	}
@@ -452,14 +452,14 @@ func init_quests():
 	q31.short_desc = "Ряды всех типов"
 	q31.difficulty_levels = {
 		"3": { 
-			"target_progress": 5, 
-			"reward_cards": 4,
-			"description": colorize_text("В городе должно быть 5 рядов, в которых есть как минимум один район каждого из 4-х типов.")
-		},
-		"4": { 
 			"target_progress": 6, 
 			"reward_cards": 4,
-			"description": colorize_text("В городе должно быть 6 рядов, в которых есть как минимум один район каждого из 4-х типов.") # Обновлено 5 -> 6
+			"description": colorize_text("В городе должно быть 6 рядов, в которых есть как минимум один район каждого из 4-х типов.")
+		},
+		"4": { 
+			"target_progress": 7, 
+			"reward_cards": 4,
+			"description": colorize_text("В городе должно быть 7 рядов, в которых есть как минимум один район каждого из 4-х типов.") # Обновлено 5 -> 6
 		},
 	}
 	quests.append(q31)
@@ -485,6 +485,7 @@ func init_quests():
 
 func draw_quest(difficulty: String) -> Quest:
 	if quests.is_empty():
+		print ("Массив квестов пустой!")
 		return null
 		
 	var q = quests.pop_front()

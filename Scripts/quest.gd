@@ -146,35 +146,39 @@ func _calc_industrial_balance(grid, grid_size):
 				if has_industrial and has_culture:
 					progress += 1
 				elif not has_industrial and not has_culture:
-					progress -= 2
+					progress -= 1
 	
 	return progress
 
 
 # --- 4. Сердце культуры ---
 func _calc_heart_of_culture(grid, grid_size):
-	var bonus := 0
+	var count := 0
 	
 	for y in range(grid_size):
 		for x in range(grid_size):
-			if _is_type(grid[y][x], "culture"):
-				var neighbor_types := {}
-				
-				for dir in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
-					var nx = x + dir[0]
-					var ny = y + dir[1]
-					
-					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
-						var nblock = grid[ny][nx]
-						if nblock != null and nblock is CityBlock:
-							neighbor_types[nblock.type] = true
-				
-				# Если есть хотя бы три разных типа соседей — бонус
-				if neighbor_types.keys().size() >= 3:
-					bonus += 1
-	
-	return bonus
+			var cell = grid[y][x]
+			if cell == null or cell.type != "culture":
+				continue
 
+			var neighbor_types := {}
+			
+			for dir in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+				var nx = x + dir[0]
+				var ny = y + dir[1]
+				
+				if nx < 0 or ny < 0 or nx >= grid_size or ny >= grid_size:
+					continue
+				
+				var neighbor = grid[ny][nx]
+				if neighbor != null and neighbor is CityBlock:
+					neighbor_types[neighbor.type] = true
+			
+			# Проверяем наличие всех трёх других типов
+			if "residential" in neighbor_types and "industrial" in neighbor_types and "nature" in neighbor_types:
+				count += 1
+	
+	return count
 
 
 # --- 5. Пояс жизни (горизонтальные/вертикальные линии) ---
@@ -227,22 +231,24 @@ func _calc_eco_industry(grid, grid_size):
 
 # --- 9. Эко-жильё ---
 func _calc_eco_homes(grid, grid_size):
-	# Получаем динамический параметр для логики
-	var required_neighbors: int = _get_current_param("min_nature_neighbors", 3) # 3 - значение по умолчанию
-	
-	var eco_homes := 0
+	var count := 0
 
 	for y in range(grid_size):
 		for x in range(grid_size):
 			if _is_type(grid[y][x], "residential"):
-				var nature_count := 0
-				# ... (логика подсчета соседей остается прежней) ... 
+				var nature_neighbors := 0
 				
-				# Динамическая проверка условия
-				if nature_count >= required_neighbors:
-					eco_homes += 1
-
-	return eco_homes
+				for dir in [[-1,0],[1,0],[0,-1],[0,1]]:
+					var nx = x + dir[0]
+					var ny = y + dir[1]
+					if nx >= 0 and ny >= 0 and nx < grid_size and ny < grid_size:
+						if _is_type(grid[ny][nx], "nature"):
+							nature_neighbors += 1
+							
+				if nature_neighbors >= 3:
+					count += 1
+					
+	return count
 
 
 
@@ -250,12 +256,16 @@ func _calc_diagonal_city(grid, grid_size):
 	var lines := 0
 
 	# ↘ диагонали (вниз-вправо)
-	for y in range(grid_size - 2):
-		for x in range(grid_size - 2):
+	for y in range(grid_size):
+		for x in range(grid_size):
 			var first = grid[y][x]
 			if first == null:
 				continue
 			var type = first.type
+
+			# Проверяем, что это начало диагонали
+			if y > 0 and x > 0 and grid[y - 1][x - 1] != null and grid[y - 1][x - 1].type == type:
+				continue
 
 			var length := 1
 			var ny = y + 1
@@ -269,12 +279,16 @@ func _calc_diagonal_city(grid, grid_size):
 				lines += 1
 
 	# ↙ диагонали (вверх-вправо)
-	for y in range(2, grid_size):
-		for x in range(grid_size - 2):
+	for y in range(grid_size):
+		for x in range(grid_size):
 			var first = grid[y][x]
 			if first == null:
 				continue
 			var type = first.type
+
+			# Проверяем, что это начало диагонали
+			if y < grid_size - 1 and x > 0 and grid[y + 1][x - 1] != null and grid[y + 1][x - 1].type == type:
+				continue
 
 			var length := 1
 			var ny = y - 1
@@ -288,6 +302,7 @@ func _calc_diagonal_city(grid, grid_size):
 				lines += 1
 
 	return lines
+
 
 
 
@@ -491,29 +506,40 @@ func _calc_diverse_neighbors(grid, grid_size):
 
 
 func _calc_diverse_block(grid, grid_size):
+	var count := 0
+	var used := [] # список занятых позиций
+	for i in range(grid_size):
+		used.append([])
+		for j in range(grid_size):
+			used[i].append(false)
+
 	for y in range(grid_size - 2):
 		for x in range(grid_size - 2):
 			var valid := true
+			var cells := [] # сюда запишем координаты 3×3 блока
 
 			for dy in range(3):
 				for dx in range(3):
-					var cell = grid[y + dy][x + dx]
-					if cell == null:
+					var gx = x + dx
+					var gy = y + dy
+					var cell = grid[gy][gx]
+					if cell == null or used[gy][gx]:
 						valid = false
 						break
+					cells.append(Vector2(gx, gy))
+
 					var t = cell.type
+					var right_x = x + dx + 1
+					var down_y = y + dy + 1
 
-					# проверяем только правого и нижнего соседа
-					var right = Vector2(dx + 1, dy)
-					var down = Vector2(dx, dy + 1)
-
-					if right.x < 3:
-						var neighbor = grid[y + right.y][x + right.x]
+					if right_x < x + 3:
+						var neighbor = grid[y + dy][right_x]
 						if neighbor != null and neighbor.type == t:
 							valid = false
 							break
-					if down.y < 3:
-						var neighbor = grid[y + down.y][x + down.x]
+
+					if down_y < y + 3:
+						var neighbor = grid[down_y][x + dx]
 						if neighbor != null and neighbor.type == t:
 							valid = false
 							break
@@ -522,9 +548,13 @@ func _calc_diverse_block(grid, grid_size):
 					break
 
 			if valid:
-				return 1
+				count += 1
+				# помечаем клетки как использованные
+				for c in cells:
+					used[int(c.y)][int(c.x)] = true
 
-	return 0
+	return count
+
 
 
 func _calc_neighboring_nature(grid, grid_size):
@@ -581,7 +611,7 @@ func _calc_edge_residential_pair(grid, grid_size):
 	var count := 0
 
 	for y in range(grid_size):
-		for x in range(grid_size):	
+		for x in range(grid_size):
 			if _is_type(grid[y][x], "residential"):
 				var has_res_neighbor := false
 				

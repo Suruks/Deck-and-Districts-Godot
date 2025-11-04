@@ -26,6 +26,7 @@ var replace_hand_sprite: TextureButton
 
 var epoch = 3
 var turns_in_epoch = 25
+var max_epoch = 4
 var turn = 1
 var total_score = 0
 
@@ -174,7 +175,7 @@ func _on_placement_attempted():
 	turn += 1
 	turn_label.text = str(turn)
 	MyLogger.log("Начался ход " + str(turn))
-	if (turn - 1) % turns_in_epoch == 0:
+	if (turn - 1) % turns_in_epoch == 0 and epoch < max_epoch:
 		epoch += 1
 		MyLogger.log("Началась эпоха " + str(epoch) + "! Квесты были усложнены")
 		epoch_label.text = str(epoch)
