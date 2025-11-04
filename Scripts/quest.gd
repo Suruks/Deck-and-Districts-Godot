@@ -13,6 +13,21 @@ var current_difficulty: String
 
 var start_turn: int = 0
 
+# Новая вспомогательная функция для получения строковых параметров
+func _get_current_string_param(param_name: String, default_value: String) -> String:
+	if difficulty_levels.has(current_difficulty):
+		var params = difficulty_levels[current_difficulty]
+		if params.has(param_name):
+			return params[param_name]
+			
+	# Иначе возвращаем значение по умолчанию (старое прямое свойство Resource).
+	return default_value
+
+# НОВЫЙ ГЕТТЕР ДЛЯ ОПИСАНИЯ
+func get_description() -> String:
+	# Используем существующее свойство description как запасное значение
+	return _get_current_string_param("description", description)
+	
 # --- Вспомогательные функции для получения параметров ---
 func _get_current_param(param_name: String, default_value) -> int:
 	if difficulty_levels.has(current_difficulty):
@@ -164,6 +179,7 @@ func _calc_heart_of_culture(grid, grid_size):
 
 # --- 5. Пояс жизни (горизонтальные/вертикальные линии) ---
 func _calc_life_belt(grid: Array, grid_size: int) -> int:
+	var required_length = _get_current_param("line_length", 4)
 	var count_lines = func(horizontal: bool) -> int:
 		var b := 0
 		for i in range(grid_size):
@@ -180,7 +196,7 @@ func _calc_life_belt(grid: Array, grid_size: int) -> int:
 					has_residential = true
 					count += 1
 				else:
-					if count >= 4 and has_nature and has_residential and not already_counted:
+					if count >= required_length and has_nature and has_residential and not already_counted:
 						b += 1
 					count = 0
 					has_nature = false
@@ -188,7 +204,7 @@ func _calc_life_belt(grid: Array, grid_size: int) -> int:
 					already_counted = false
 					continue
 
-				if count >= 4 and has_nature and has_residential and not already_counted:
+				if count >= required_length and has_nature and has_residential and not already_counted:
 					b += 1
 					already_counted = true
 		return b
@@ -241,18 +257,16 @@ func _calc_diagonal_city(grid, grid_size):
 				continue
 			var type = first.type
 
-			var length := 0
-			while y + length < grid_size and x + length < grid_size:
-				var cell = grid[y + length][x + length]
-				if cell == null or cell.type != type:
-					break
+			var length := 1
+			var ny = y + 1
+			var nx = x + 1
+			while ny < grid_size and nx < grid_size and grid[ny][nx] != null and grid[ny][nx].type == type:
 				length += 1
+				ny += 1
+				nx += 1
 
 			if length >= 3:
 				lines += 1
-				# пропускаем оставшуюся часть этой линии
-				x += length - 1
-				y += length - 1
 
 	# ↙ диагонали (вверх-вправо)
 	for y in range(2, grid_size):
@@ -262,17 +276,16 @@ func _calc_diagonal_city(grid, grid_size):
 				continue
 			var type = first.type
 
-			var length := 0
-			while y - length >= 0 and x + length < grid_size:
-				var cell = grid[y - length][x + length]
-				if cell == null or cell.type != type:
-					break
+			var length := 1
+			var ny = y - 1
+			var nx = x + 1
+			while ny >= 0 and nx < grid_size and grid[ny][nx] != null and grid[ny][nx].type == type:
 				length += 1
+				ny -= 1
+				nx += 1
 
 			if length >= 3:
 				lines += 1
-				x += length - 1
-				y -= length - 1
 
 	return lines
 
@@ -352,6 +365,8 @@ func _calc_industrial_row(grid, grid_size):
 
 # --- 16. Городская масса ---
 func _calc_urban_mass(grid, grid_size):
+	var required_group_size = _get_current_param("group_size", 5)
+	
 	var visited := {} # Dictionary для хранения посещённых клеток
 	var count := 0
 
@@ -360,7 +375,7 @@ func _calc_urban_mass(grid, grid_size):
 			var cell = grid[y][x]
 			if cell != null and not visited.has(str(x)+","+str(y)):
 				var group_size = _dfs_group(grid, x, y, grid_size, cell.type, visited)
-				if group_size >= 5:
+				if group_size >= required_group_size:
 					count += 1
 
 	return count

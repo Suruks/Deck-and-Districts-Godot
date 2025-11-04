@@ -5,7 +5,7 @@ const SAVE_PATH = "user://raw_quest_data.json"
 
 # Сохраняет одну запись о завершенном квесте.
 # Данные сохраняются в виде массива JSON-объектов.
-func append_quest_data(quest_type: String, duration: int):
+func append_quest_data(quest_type: String, difficulty: String, duration: int):
 	# 1. Загружаем текущие данные (если файл существует)
 	var all_data: Array = []
 	if FileAccess.file_exists(SAVE_PATH):
@@ -24,6 +24,7 @@ func append_quest_data(quest_type: String, duration: int):
 	var new_entry = {
 		"quest_type": quest_type,
 		"duration": duration,
+		"difficulty": difficulty,
 		"timestamp": Time.get_unix_time_from_system()
 	}
 	

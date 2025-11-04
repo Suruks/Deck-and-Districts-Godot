@@ -47,7 +47,7 @@ func update_ui():
 
 	# --- Обновляем текст и прогресс ---
 	label_desc.bbcode_enabled = true
-	label_desc.bbcode_text  = quest.description
+	label_desc.bbcode_text = quest.get_description()
 	label_desc.autowrap_mode = TextServer.AUTOWRAP_WORD
 	label_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Label сам считает высоту

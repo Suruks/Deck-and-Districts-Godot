@@ -25,7 +25,7 @@ var grid_manager: GridManager
 var replace_hand_sprite: TextureButton
 
 var epoch = 3
-var turns_in_epoch = 30
+var turns_in_epoch = 25
 var turn = 1
 var total_score = 0
 
@@ -113,7 +113,7 @@ func update_quest_scores():
 
 func _on_quest_completed(reward_count: int, quest: Quest):
 	var duration = turn - quest.start_turn
-	stat_saver.append_quest_data(quest.quest_type, duration)
+	stat_saver.append_quest_data(quest.quest_type, quest.current_difficulty, duration)
 	
 	MyLogger.log("Квест '" + quest.short_desc + "' (" + quest.quest_type + ") пройден за " + str(duration) + " ходов. Данные сохранены.")
 	MyLogger.log("Добавляем " + str(reward_count) + " карт(ы) в колоду.")
