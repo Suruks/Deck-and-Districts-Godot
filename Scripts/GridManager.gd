@@ -104,9 +104,6 @@ func _can_place_card(card: Card, cell_coords: Vector2) -> bool:
 	return true
 	
 func _execute_placement(selected_card: Card, cell_coords: Vector2):
-	# Старение всех блоков
-	CityBlock.age_all_blocks(grid, 1) # 'grid' и 'CityBlock' доступны в main.gd
-
 	# Размещение блоков
 	for i in range(selected_card.blocks.size()):
 		var bpos = selected_card.blocks[i] + cell_coords
@@ -123,7 +120,16 @@ func _execute_placement(selected_card: Card, cell_coords: Vector2):
 		new_block.place_at_screen_position(grid_to_screen(bpos.x, bpos.y))
 		add_child(new_block)
 		grid[bpos.y][bpos.x] = new_block
-		
+
+func age_all_blocks(amount: int):
+	for y in range(grid.size()):
+		for x in range(grid[y].size()):
+			var block = grid[y][x]
+			if block != null and block is CityBlock:
+				block.age_block(amount)
+				if block.aging >= block.max_aging:
+					grid[y][x] = null
+
 func get_center_screen_position() -> Vector2:
 	var center_coord = float(grid_size) / 2.0 - 0.5
 	return grid_to_screen(center_coord, center_coord)

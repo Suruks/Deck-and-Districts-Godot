@@ -239,9 +239,10 @@ func _calc_eco_industry(grid, grid_size):
 			var cell = grid[y][x]
 			if cell != null and _is_type(cell, "industrial") and not visited.has(str(x) + "," + str(y)):
 				var group_size = _dfs_group_new(grid, x, y, grid_size, "industrial", visited)
-				industrial_count += group_size
-				if group_size < min_group_size:
-					return 0
+				if group_size >= min_group_size:
+					industrial_count += group_size
+				else:
+					industrial_count -= 1
 
 	return industrial_count
 
@@ -797,7 +798,6 @@ func _calc_mixed_rows(grid, grid_size):
 		if all_types_present:
 			mixed_lines += 1
 
-	print("Смешанных рядов обнаружено: ", mixed_lines)
 	return mixed_lines
 	
 func _calc_unique_squares(grid, grid_size):

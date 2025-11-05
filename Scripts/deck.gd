@@ -21,8 +21,8 @@ func add_cards(count: int = 1) -> int:
 	for i in range(count): # for each card
 		if cards.size() >= max_cards:
 			cards_to_extension += 1
-			MyLogger.log("Карта сожжена! До увеличения предела карт: " + str(4 - cards_to_extension))
-			if cards_to_extension >= 4: # увеличение максимума
+			MyLogger.log("Карта сожжена! До увеличения предела карт: " + str(3 - cards_to_extension))
+			if cards_to_extension >= 3: # увеличение максимума
 				cards_to_extension = 0
 				max_cards += 1
 			break

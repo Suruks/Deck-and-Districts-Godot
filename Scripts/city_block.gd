@@ -56,13 +56,3 @@ func age_block(amount: int = 1):
 		queue_free()
 	else:
 		update_visual()
-
-# --- Старение всей сетки ---
-static func age_all_blocks(grid: Array, amount: int):
-	for y in range(grid.size()):
-		for x in range(grid[y].size()):
-			var block = grid[y][x]
-			if block != null and block is CityBlock:
-				block.age_block(amount)
-				if not is_instance_valid(block):
-					grid[y][x] = null

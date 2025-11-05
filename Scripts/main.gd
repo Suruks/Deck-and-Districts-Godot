@@ -149,27 +149,31 @@ func setup_hand():
 
 
 func _on_placement_attempted():
-	# 1. Определение ячейки
-	var cell_coords = grid_manager.get_hovered_cell()
+	var cell_coords = grid_manager.get_hovered_cell() # Определение ячейки
 	if cell_coords == null:
 		return
-
-	# 2. Получение данных карты (через CardManager)
-	var selected_card = card_manager.get_selected_card()
+	 
+	var selected_card = card_manager.get_selected_card() # Получение данных карты (через CardManager)
 	if selected_card == null:
 		return
 
-	# 3. Проверка правил (переносим логику проверки из input.gd)
-	if not grid_manager._can_place_card(selected_card, cell_coords):
+	if not grid_manager._can_place_card(selected_card, cell_coords): # Проверка правил
 		return
 
-	# 4. Выполнение размещения блоков (логика из input.gd)
-	grid_manager._execute_placement(selected_card, cell_coords)
+	grid_manager._execute_placement(selected_card, cell_coords) # Выполнение размещения блоков
 
-	# 5. Выполнение транзакции (обновление руки/колоды)
-	card_manager.complete_placement_transaction()
+	card_manager.complete_placement_transaction() # обновление руки/колоды
 	
-	# 6. Смена хода/эпохи
+	grid_manager.clear_preview()
+	
+	new_turn()
+
+func new_turn():
+	update_quest_scores() # Обновление квестов (до старения)
+	
+	# Старение всех блоков
+	grid_manager.age_all_blocks(1)
+	
 	turn += 1
 	turn_label.text = str(turn)
 	MyLogger.log("Начался ход " + str(turn))
@@ -179,15 +183,13 @@ func _on_placement_attempted():
 		epoch_label.text = str(epoch)
 		if epoch == 5:
 			var difficulty_str = str(epoch)
-			# Вызываем функцию, которую мы сейчас исправим в QuestManager.gd
 			quest_manager.add_quest_slot(turn, difficulty_str)
 	
 	# 6. Обновление UI/Квестов
 	_update_deck_ui() # Обновляем счетчик
-	grid_manager.clear_preview()
-	# card_placed.emit() # Если такой сигнал нужен для квестов, излучаем его здесь!
-	update_quest_scores() # Обновление квестов
-
+	
+	update_quest_scores() # Обновление квестов (после старения)
+	
 
 func _update_deck_ui():
 	deck_count_label.text = str(card_manager.get_deck_size())
@@ -269,7 +271,7 @@ func _replace_hand():
 		return
 			
 	# Старим все блоки
-	CityBlock.age_all_blocks(grid_manager.grid, 3)
+	grid_manager.age_all_blocks(3)
 
 	if hand_script == null or hand_script.hand_data.size() == 0:
 		return
