@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdavmqbnl0f6n"
-path="res://.godot/imported/Deck and Districts.icon.png-1bb983197d048837bcd4573d7337d462.ctex"
+uid="uid://t8kqn3f2o3vd"
+path="res://.godot/imported/Deck and Districts.icon.png-7467177bc3aa978f858ac6882ad51f63.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Deck and Districts.icon.png"
-dest_files=["res://.godot/imported/Deck and Districts.icon.png-1bb983197d048837bcd4573d7337d462.ctex"]
+source_file="res://build/Deck and Districts.icon.png"
+dest_files=["res://.godot/imported/Deck and Districts.icon.png-7467177bc3aa978f858ac6882ad51f63.ctex"]
 
 [params]
 
