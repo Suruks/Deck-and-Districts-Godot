@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ci3u5bjdaw8n4"
-path="res://.godot/imported/Deck and Districts.apple-touch-icon.png-6f56aa251da8a4633ddff88efd6117a9.ctex"
+path="res://.godot/imported/Deck and Districts.apple-touch-icon.png-ee81410fe869f029d46fd9582bdcf30a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://build/Deck and Districts.apple-touch-icon.png"
-dest_files=["res://.godot/imported/Deck and Districts.apple-touch-icon.png-6f56aa251da8a4633ddff88efd6117a9.ctex"]
+source_file="res://Deck and Districts.apple-touch-icon.png"
+dest_files=["res://.godot/imported/Deck and Districts.apple-touch-icon.png-ee81410fe869f029d46fd9582bdcf30a.ctex"]
 
 [params]
 
